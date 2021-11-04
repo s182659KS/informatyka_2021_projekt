@@ -10,8 +10,15 @@ za ka¿dym trafieniem. Punkty zdobywamy poprzez liczbe zniszczonych przeciwników 
 #include <SFML/Graphics.hpp>
 #include <iostream>
 class Player {//klasa dla gracza
-	//sf::ConvexShape ;
-
+private:
+	int pancerz;
+	int pociski;
+	sf::Vector2f pozycja;//wspolrzedne
+	float xVel = 10;//predkosc w poziomie
+	float yVel = 10;//predkosc w pionie
+	sf::CircleShape tank;//czo³g
+public:
+	void ruch();
 };
 class Enemy {//klasa dla botów -  przeciwników
 
@@ -22,7 +29,6 @@ class ObjSrd {//elementy otoczenia
 
 int main()
 {
-	int kierunek[4];
 	sf::RenderWindow window(sf::VideoMode(800, 600), "TANK 2021");
 	sf::Vector2u size = window.getSize();
 	unsigned int width = size.x;
@@ -37,13 +43,13 @@ int main()
 	tankPlayer.setOrigin(40, 40);
 	while (window.isOpen())
 	{
-	
+
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) 
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 				tankPlayer.move(0, 1);
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 				tankPlayer.move(0, -1);
