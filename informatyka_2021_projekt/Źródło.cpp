@@ -25,8 +25,8 @@ private:
 	//sf::CircleShape tank;//czo³g
 public:
 	Player() {
-		pozycja.x = 200;
-		pozycja.y = 200;
+		pozycja.x = 400;
+		pozycja.y = 550;
 		sf::IntRect ksztalt (200, 0, 50, 50);//niedzia³a tak
 		plrtxt.loadFromFile("teksturaPlayer.png");
 		plrtank.setTexture(plrtxt);
@@ -43,13 +43,13 @@ public:
 		float pi = 3.14159;
 		int mark = zderzenie();
 		rotacja = plrtank.getRotation()-90;
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)&& mark ==1)
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 			plrtank.move(cos(rotacja*pi/180), sin(rotacja * pi / 180));
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && mark == 1)
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 			plrtank.move(-cos(rotacja * pi / 180), -sin(rotacja * pi / 180));
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && mark == 1)
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 			plrtank.rotate(-1);
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && mark == 1)
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			plrtank.rotate(1);
 		std::cout << "Rotacja:" << rotacja << std::endl;
 		
@@ -57,12 +57,6 @@ public:
 	}
 	int zderzenie() {//domyœlnie bêdzie pobiera³ rozmaiar okna
 		int marker;
-		if (0 <= plrtank.getPosition().x <= 800)
-			marker = 1;
-		if (0 <= plrtank.getPosition().y <= 600)
-			marker = 1;
-		else
-			marker = 0;
 		return marker;
 	}
 };
