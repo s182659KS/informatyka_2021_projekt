@@ -79,13 +79,11 @@ public:
 			plrtank.move(0, 1);
 		if (plrtank.getPosition().y >= window.getSize().y)
 			plrtank.move(0, -1);
-
 		return rotacja;
 	}
-	void strzal() {//metoda dla pocisku::TRWAJ¥ TESTY
+	void strzal() {//metoda dla pocisku
 		float kierunekx;
 		float kieruneky;
-		//pocisk = new sf::Sprite[N];
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
 			pocisktxt.loadFromFile("pocisktxt.png");
 			pocisk.setTexture(pocisktxt);
@@ -108,6 +106,10 @@ public:
 		return plrtank.getPosition();
 	}
 
+	void zderzenieWall(sf::Vector2f objCol) {
+	
+	}
+
 };
 //PRZECIWNICY dziedzicz¹ niektóre metody po graczu
 class Enemy:public Player {//klasa dla botów -  przeciwników
@@ -126,10 +128,7 @@ class ObjSrd {//elementy otoczenia
 	int mapa[50][2];//tablica przechowuj¹ca pozycje
 	sf::Vector2f pozycja;
 	std::random_device rd;
-	
-
 public:
-
 	int n = 50;
 	ObjSrd(int N) {
 		walltex.loadFromFile("cegla.png");
