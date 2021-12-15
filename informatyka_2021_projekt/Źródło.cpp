@@ -1,3 +1,4 @@
+
 /*
 Temat projektu: Gra akcji Tank2021 (replika gry Tank1990)
 Zakres projektu:Gra jednoosobowa polegaj¹ca na zniszczeniu bazy wroga znajduj¹cej siê po drugiej stronie planszy
@@ -17,7 +18,8 @@ class Player {//klasa dla gracza
 private:
 	sf::Texture plrtxt;//tekstura dla gracza
 	sf::Sprite plrtank;//duszek dla gracza
-	sf::IntRect ksztalt;//kszta³t sprit'a
+	sf::Sprite pocisk;//duszek dla pocisku
+	sf::Texture pocisktxt;//tekstura dla pocisku
 	int pociski;
 	float pancerz;
 	sf::Vector2f pozycja;//wspolrzedne gracza
@@ -25,6 +27,7 @@ private:
 	float yVel = 10;//predkosc w pionie
 	//sf::CircleShape tank;//czo³g
 public:
+	float pi = 3.14159;
 	Player() {
 		pozycja.x = 400;
 		pozycja.y = 550;
@@ -37,21 +40,38 @@ public:
 		
 	}
 	void draw(sf::RenderWindow& window) {
-			window.draw(plrtank);
+		window.draw(pocisk);
+		window.draw(plrtank);
+			
 	}
-	float ruch(sf::RenderWindow& window) {//sterowanie pojazdem gracza
+	float ruch(sf::RenderWindow& window, sf::Sprite obiektOto) {//sterowanie pojazdem gracza
 		float rotacja;
 		float pi = 3.14159;
-		rotacja = plrtank.getRotation()-90;
+		rotacja = plrtank.getRotation() - 90;
+		float speed = 0.4;
+		//kolizja z obiektem ->dzia³a
+		if (plrtank.getGlobalBounds().intersects(obiektOto.getGlobalBounds())) {
+			//std::cout << "myd³o\n";
+			if(plrtank.getPosition().x<obiektOto.getPosition().x)
+				plrtank.setPosition(plrtank.getPosition().x - 1, plrtank.getPosition().y);
+			if(plrtank.getPosition().x > obiektOto.getPosition().x)
+				plrtank.setPosition(plrtank.getPosition().x + 1, plrtank.getPosition().y);
+			if (plrtank.getPosition().y < obiektOto.getPosition().y)
+				plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y - 1);
+			if (plrtank.getPosition().y > obiektOto.getPosition().y)
+				plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y + 1);
+		}
+		//g³owne sterowanie
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			plrtank.move(cos(rotacja*pi/180), sin(rotacja * pi / 180));
+			plrtank.move(speed* cos(rotacja * pi / 180), speed * sin(rotacja * pi / 180));
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			plrtank.move(-cos(rotacja * pi / 180), -sin(rotacja * pi / 180));
+			plrtank.move(speed * -cos(rotacja * pi / 180), speed * -sin(rotacja * pi / 180));
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 			plrtank.rotate(-1);
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			plrtank.rotate(1);
-		if(plrtank.getPosition().x <= 0)
+		//ograniczenie do okna
+		if (plrtank.getPosition().x <= 0)
 			plrtank.move(1, 0);
 		if (plrtank.getPosition().x >= window.getSize().x)
 			plrtank.move(-1, 0);
@@ -59,16 +79,38 @@ public:
 			plrtank.move(0, 1);
 		if (plrtank.getPosition().y >= window.getSize().y)
 			plrtank.move(0, -1);
-		//std::cout << "Rotacja:" << rotacja << std::endl;
-		
+
 		return rotacja;
 	}
-	int zderzenie() {//domyœlnie bêdzie pobiera³ rozmaiar okna
-
+	void strzal() {//metoda dla pocisku::TRWAJ¥ TESTY
+		float kierunekx;
+		float kieruneky;
+		//pocisk = new sf::Sprite[N];
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
+			pocisktxt.loadFromFile("pocisktxt.png");
+			pocisk.setTexture(pocisktxt);
+			pocisk.setPosition(plrtank.getPosition());
+			pocisk.setOrigin(2, 2);
+			kierunekx = cos((plrtank.getRotation() - 90) * pi / 180);
+			kieruneky = sin((plrtank.getRotation() - 90) * pi / 180);
+			
+		}
+		pocisk.move(2 * kierunekx, 2 * kieruneky);
 	}
+
+
+
+	void zderzenieWall(sf::Sprite obiektOto) {
+	
+	}
+
+	sf::Vector2f zwrocPoz() {
+		return plrtank.getPosition();
+	}
+
 };
-//PRZECIWNICY
-class Enemy {//klasa dla botów -  przeciwników
+//PRZECIWNICY dziedzicz¹ niektóre metody po graczu
+class Enemy:public Player {//klasa dla botów -  przeciwników
 private:
 	sf::Texture enmtxt;//tekstura
 	sf::Sprite* enemy;//tablica obiektow
@@ -87,6 +129,7 @@ class ObjSrd {//elementy otoczenia
 	
 
 public:
+
 	int n = 50;
 	ObjSrd(int N) {
 		walltex.loadFromFile("cegla.png");
@@ -100,8 +143,23 @@ public:
 			std::cout << mapa[i][1] << " " << mapa[i][2] << std::endl;
 			wall[i].setTexture(walltex);//nalozenie tekstury
 			wall[i].setPosition(sf::Vector2f(pozycja.x, pozycja.y));//ustawienie pozycji poczatkowej
+			wall[i].setOrigin(15, 15);
 		}
 		std::fclose(fp);
+	}
+
+	sf::Sprite sprawdzKol(sf::Vector2f plr_poz, int N) {//iteracja po wszystkich utworzonych obiektach ototczenia , w poszukwaniu kolizji
+		int i = 0;
+		for (i = 0; i < N; i++) {
+			if (abs(wall[i].getPosition().x - plr_poz.x)<40 && abs(wall[i].getPosition().y - plr_poz.y)<40) {
+				std::cout << "kolizja z " << i << std::endl;//kolizja z obiektem 
+				return wall[i];// zwaracanie pozycjê 
+				//return i;
+			}
+
+		}
+		//return i;
+
 	}
 		
 
@@ -121,8 +179,8 @@ public:
 		for (int k = 0; k <= N; k++) {
 			int j = distX(gen);
 			int i = distY(gen);
-			tabB[k][1] = (j * 30)-15;
-			tabB[k][2] = (i * 30)-15;
+			tabB[k][1] = (j * 30);
+			tabB[k][2] = (i * 30);
 			std::cout << tabB[k][1] << "," << tabB[k][2] << std::endl;
 			fwrite(&tabB[k][1], sizeof(tabB[0][0]), 1, fp);
 			fwrite(&tabB[k][2], sizeof(tabB[0][0]), 1, fp);
@@ -156,9 +214,12 @@ int main()
 			
 		}
 		window.clear();
-		p1.ruch(window); 
+		p1.ruch(window, s1.sprawdzKol(p1.zwrocPoz(), 50));
+		p1.strzal();
+		p1.zderzenieWall(s1.sprawdzKol(p1.zwrocPoz(), 50));
 		s1.draw(window);
 		p1.draw(window);
+		
 		window.display();
 	}
 	return 0;
