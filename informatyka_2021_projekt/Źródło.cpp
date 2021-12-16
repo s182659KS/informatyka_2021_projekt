@@ -116,8 +116,26 @@ class Enemy:public Player {//klasa dla botów -  przeciwników
 private:
 	sf::Texture enmtxt;//tekstura
 	sf::Sprite* enemy;//tablica obiektow
+	sf::Vector2f poz;
 	int N;//liczba obiektow graf
 	std::random_device rd;//randomizacja po³o¿enia 
+
+public:
+	Enemy() {
+		poz.x = 400;
+		poz.y = 50;
+		enmtxt.loadFromFile("teksturaPrzeciwnik.png");
+		enemy.setTexture(enmtxt);
+		enemy.setPosition(poz);
+		enemy.setOrigin(25, 30);//œrodek sprita
+
+
+	}
+	void draw(sf::RenderWindow& window) {
+		window.draw(enemy);
+
+	}
+
 };
 
 //OTOCZENIE
@@ -201,6 +219,7 @@ int main()
 	unsigned int width = size.x;
 	unsigned int hight = size.y;
 	Player p1;
+	Enemy e1;
 	ObjSrd s1(50);
 	while (window.isOpen())
 	{
@@ -215,6 +234,7 @@ int main()
 		window.clear();
 		p1.ruch(window, s1.sprawdzKol(p1.zwrocPoz(), 50));
 		p1.strzal();
+		e1.draw(window);
 		p1.zderzenieWall(s1.sprawdzKol(p1.zwrocPoz(), 50));
 		s1.draw(window);
 		p1.draw(window);
