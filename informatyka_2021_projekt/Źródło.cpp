@@ -31,18 +31,18 @@ public:
 	Player() {
 		pozycja.x = 400;
 		pozycja.y = 550;
-		sf::IntRect ksztalt (200, 0, 50, 50);//niedzia³a tak
+		sf::IntRect ksztalt(200, 0, 50, 50);//niedzia³a tak
 		plrtxt.loadFromFile("teksturaPlayer.png");
 		plrtank.setTexture(plrtxt);
 		plrtank.setPosition(pozycja);
 		plrtank.setOrigin(25, 30);//œrodek sprita
 
-		
+
 	}
 	void draw(sf::RenderWindow& window) {
 		window.draw(pocisk);
 		window.draw(plrtank);
-			
+
 	}
 	float ruch(sf::RenderWindow& window, sf::Sprite obiektOto) {//sterowanie pojazdem gracza
 		float rotacja;
@@ -50,20 +50,20 @@ public:
 		rotacja = plrtank.getRotation() - 90;
 		float speed = 0.4;
 		//kolizja z obiektem ->dzia³a
-		if (plrtank.getGlobalBounds().intersects(obiektOto.getGlobalBounds())) {
-			//std::cout << "myd³o\n";
-			if(plrtank.getPosition().x<obiektOto.getPosition().x)
-				plrtank.setPosition(plrtank.getPosition().x - 1, plrtank.getPosition().y);
-			if(plrtank.getPosition().x > obiektOto.getPosition().x)
-				plrtank.setPosition(plrtank.getPosition().x + 1, plrtank.getPosition().y);
-			if (plrtank.getPosition().y < obiektOto.getPosition().y)
-				plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y - 1);
-			if (plrtank.getPosition().y > obiektOto.getPosition().y)
-				plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y + 1);
-		}
+		//if (plrtank.getGlobalBounds().intersects(obiektOto.getGlobalBounds())) {
+		//	//std::cout << "myd³o\n";
+		//	if (plrtank.getPosition().x < obiektOto.getPosition().x)
+		//		plrtank.setPosition(plrtank.getPosition().x - 1, plrtank.getPosition().y);
+		//	if (plrtank.getPosition().x > obiektOto.getPosition().x)
+		//		plrtank.setPosition(plrtank.getPosition().x + 1, plrtank.getPosition().y);
+		//	if (plrtank.getPosition().y < obiektOto.getPosition().y)
+		//		plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y - 1);
+		//	if (plrtank.getPosition().y > obiektOto.getPosition().y)
+		//		plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y + 1);
+		//}
 		//g³owne sterowanie
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			plrtank.move(speed* cos(rotacja * pi / 180), speed * sin(rotacja * pi / 180));
+			plrtank.move(speed * cos(rotacja * pi / 180), speed * sin(rotacja * pi / 180));
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 			plrtank.move(speed * -cos(rotacja * pi / 180), speed * -sin(rotacja * pi / 180));
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
@@ -84,43 +84,57 @@ public:
 	void strzal() {//metoda dla pocisku
 		float kierunekx;
 		float kieruneky;
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
 			pocisktxt.loadFromFile("pocisktxt.png");
 			pocisk.setTexture(pocisktxt);
 			pocisk.setPosition(plrtank.getPosition());
 			pocisk.setOrigin(2, 2);
 			kierunekx = cos((plrtank.getRotation() - 90) * pi / 180);
 			kieruneky = sin((plrtank.getRotation() - 90) * pi / 180);
-			
+
 		}
 		pocisk.move(2 * kierunekx, 2 * kieruneky);
 	}
 
 
 
-	void zderzenieWall(sf::Sprite obiektOto) {
-	
+	void zderzenieObj(sf::Sprite obiektOto) {
+		if (plrtank.getGlobalBounds().intersects(obiektOto.getGlobalBounds())) {
+			//std::cout << "myd³o\n";
+			if (plrtank.getPosition().x < obiektOto.getPosition().x)
+				plrtank.setPosition(plrtank.getPosition().x - 1, plrtank.getPosition().y);
+			if (plrtank.getPosition().x > obiektOto.getPosition().x)
+				plrtank.setPosition(plrtank.getPosition().x + 1, plrtank.getPosition().y);
+			if (plrtank.getPosition().y < obiektOto.getPosition().y)
+				plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y - 1);
+			if (plrtank.getPosition().y > obiektOto.getPosition().y)
+				plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y + 1);
+		}
 	}
 
 	sf::Vector2f zwrocPoz() {
 		return plrtank.getPosition();
 	}
 
-	void zderzenieWall(sf::Vector2f objCol) {
-	
+	sf::Sprite zwrocSprite() {
+		return plrtank;
 	}
 
 };
 //PRZECIWNICY dziedzicz¹ niektóre metody po graczu
-class Enemy:public Player {//klasa dla botów -  przeciwników
+class Enemy :public Player {//klasa dla botów -  przeciwników
 private:
 	sf::Texture enmtxt;//tekstura
-	sf::Sprite* enemy;//tablica obiektow
+	sf::Sprite enemy;//tablica obiektow
 	sf::Vector2f poz;
 	int N;//liczba obiektow graf
 	std::random_device rd;//randomizacja po³o¿enia 
 
 public:
+	int n = 0;
+	int rotMem = 0;
+	//zmienne sterowania botów
+	int ruchBot = 300, katBot = 90;
 	Enemy() {
 		poz.x = 400;
 		poz.y = 50;
@@ -131,9 +145,72 @@ public:
 
 
 	}
+
+	void ruch_bot(sf::RenderWindow& window) {
+		float speed = 0.4;
+		float pi = 3.14159;
+		float rotacja;
+		rotacja = enemy.getRotation() - 90;
+		std::mt19937 gen(rd());
+		n++;
+		if (n <= katBot) {
+			enemy.rotate(rotMem);
+		}
+		if (katBot < n < (katBot + ruchBot)) {
+			enemy.move(speed * cos(rotacja * pi / 180), speed * sin(rotacja * pi / 180));
+		}
+		if (n > (katBot + ruchBot)) {
+			std::uniform_int_distribution<> rotGen(-1, 1);//tu trzenba pokombinowac
+			rotMem = rotGen(gen);
+			n = 0;
+		}
+		//std::cout << n<<"  " << (n * rotMem) * pi / 180 << std::endl;
+		//ograniczenie do okna
+		if (enemy.getPosition().x <= 0) {
+			enemy.move(1, 0);
+			enemy.rotate(1);
+		}
+		if (enemy.getPosition().x >= window.getSize().x) {
+			enemy.move(-1, 0);
+			enemy.rotate(1);
+		}
+		if (enemy.getPosition().y <= 0) {
+			enemy.move(0, 1);
+			enemy.rotate(1);
+		}
+		if (enemy.getPosition().y >= window.getSize().y) {
+			enemy.move(0, -1);
+			enemy.rotate(1);
+		}
+	}
 	void draw(sf::RenderWindow& window) {
 		window.draw(enemy);
 
+	}
+	sf::Vector2f zwrocPoz() {
+		return enemy.getPosition();
+	}
+
+	void zderzenieObj(sf::Sprite obiektOto) {
+		if (enemy.getGlobalBounds().intersects(obiektOto.getGlobalBounds())) {
+			//std::cout << "myd³o\n";
+			if (enemy.getPosition().x < obiektOto.getPosition().x) {
+				enemy.setPosition(enemy.getPosition().x - 1, enemy.getPosition().y);
+				enemy.rotate(1);
+			}
+			if (enemy.getPosition().x > obiektOto.getPosition().x) {
+				enemy.setPosition(enemy.getPosition().x + 1, enemy.getPosition().y);
+				enemy.rotate(-1);
+			}
+			if (enemy.getPosition().y < obiektOto.getPosition().y) {
+				enemy.setPosition(enemy.getPosition().x, enemy.getPosition().y - 1);
+				enemy.rotate(1);
+			}
+			if (enemy.getPosition().y > obiektOto.getPosition().y) {
+				enemy.setPosition(enemy.getPosition().x, enemy.getPosition().y + 1);
+				enemy.rotate(-1);
+			}
+		}
 	}
 
 };
@@ -168,7 +245,7 @@ public:
 	sf::Sprite sprawdzKol(sf::Vector2f plr_poz, int N) {//iteracja po wszystkich utworzonych obiektach ototczenia , w poszukwaniu kolizji
 		int i = 0;
 		for (i = 0; i < N; i++) {
-			if (abs(wall[i].getPosition().x - plr_poz.x)<40 && abs(wall[i].getPosition().y - plr_poz.y)<40) {
+			if (abs(wall[i].getPosition().x - plr_poz.x) < 40 && abs(wall[i].getPosition().y - plr_poz.y) < 40) {
 				std::cout << "kolizja z " << i << std::endl;//kolizja z obiektem 
 				return wall[i];// zwaracanie pozycjê 
 				//return i;
@@ -178,13 +255,13 @@ public:
 		//return i;
 
 	}
-		
+
 
 	void generacja(int poziom) {//generatior rozmieszczenia elementów
 		int const N = 50;//tymczasowo, domyœlnie dynamiczna alokacja pam.
 		if (poziom == 1)
 			int const N = 50;
-		else if(poziom == 2)
+		else if (poziom == 2)
 			int const N = 75;
 		else if (poziom == 3)
 			int const N = 100;
@@ -223,22 +300,24 @@ int main()
 	ObjSrd s1(50);
 	while (window.isOpen())
 	{
-	
+
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
-			
+
 		}
 		window.clear();
 		p1.ruch(window, s1.sprawdzKol(p1.zwrocPoz(), 50));
 		p1.strzal();
+		e1.ruch_bot(window);
+		e1.zderzenieObj(s1.sprawdzKol(e1.zwrocPoz(), 50));
 		e1.draw(window);
-		p1.zderzenieWall(s1.sprawdzKol(p1.zwrocPoz(), 50));
+		p1.zderzenieObj(s1.sprawdzKol(p1.zwrocPoz(), 50));
 		s1.draw(window);
 		p1.draw(window);
-		
+
 		window.display();
 	}
 	return 0;
