@@ -13,8 +13,11 @@ za ka¿dym trafieniem. Punkty zdobywamy poprzez liczbe zniszczonych przeciwników 
 #include <random>
 #include <math.h>
 #include <vector>
+#include "silnik.cpp"
 #pragma warning(disable:4996)
-//GRACZ
+//GRACZ	
+
+float pi = 3.14159;
 class Player {//klasa dla gracza
 private:
 	sf::Texture plrtxt;//tekstura dla gracza
@@ -26,17 +29,23 @@ private:
 	sf::Vector2f pozycja;//wspolrzedne gracza
 	float kierunekX = 0;
 	float kierunekY = 0;
+	float speed;//predkoœæ bota
 	//dla pocisków:
 	int iloscPociskow;
-	int ruchPoc;
+
 	int reload;
 	bool flagaStrzal;
 	int czasPrzel;
+	//dla wygranej lub pora¿ki
+	bool wygrana;
+
 public:
 	float pi = 3.14159;
 	int M = 1;
+	int ruchPoc;
 	Player() {
-		iloscPociskow = 3;
+		iloscPociskow = 1;
+		//speed = 1;
 		pozycja.x = 200;
 		pozycja.y = 550;
 		plrtxt.loadFromFile("teksturaPlayer.png");
@@ -52,16 +61,15 @@ public:
 		window.draw(plrtank);
 
 	}
-	float ruch(sf::RenderWindow& window) {//sterowanie pojazdem gracza
+	float ruch(sf::RenderWindow& window, float speedPly) {//sterowanie pojazdem gracza
 		float rotacja;
 		float pi = 3.14159;
 		rotacja = plrtank.getRotation() - 90;
-		float speed = 0.4;
 		//g³owne sterowanie
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			plrtank.move(speed * cos(rotacja * pi / 180), speed * sin(rotacja * pi / 180));
+			plrtank.move(speedPly * cos(rotacja * pi / 180), speedPly * sin(rotacja * pi / 180));
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			plrtank.move(speed * -cos(rotacja * pi / 180), speed * -sin(rotacja * pi / 180));
+			plrtank.move(speedPly * -cos(rotacja * pi / 180), speedPly * -sin(rotacja * pi / 180));
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 			plrtank.rotate(-1);
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
@@ -78,12 +86,12 @@ public:
 		return rotacja;
 	}
 	sf::Sprite strzal(sf::RenderWindow& window) {//metoda dla pocisku
-		flagaStrzal = przelPoc();
+		flagaStrzal = przelPoc(200);
 		pocisktxt.loadFromFile("pocisktxt.png");
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)&&flagaStrzal==true) {
 			for (int i = 0; i < iloscPociskow; i++) {
 				ruchPoc = 1;
-				pocisk[i].setColor(sf::Color::White);
+				//pocisk[i].setColor(sf::Color::White);
 				pocisk[i].setTexture(pocisktxt);
 				pocisk[i].setPosition(plrtank.getPosition());
 				pocisk[i].setOrigin(2, 2);
@@ -98,15 +106,15 @@ public:
 		for (int i = 0; i < iloscPociskow; i++) {
 			//std::cout << "drukuj" << kierPoc.x<< std::endl;
 			if (ruchPoc == 1) {
-				pocisk[i].move(4 * kierPoc[i].x, 4 * kierPoc[i].y);
+				pocisk[i].move(3 * kierPoc[i].x, 3 * kierPoc[i].y);
 				window.draw(pocisk[i]);
 			}
 			
 		}
 		
 	}
-	bool przelPoc() {//metoda do prze³adowania pocisku
-		czasPrzel = 200;
+	bool przelPoc(int czasPrzel) {//metoda do prze³adowania pocisku
+		//czasPrzel = 200;
 		if (reload < czasPrzel && flagaStrzal == false) {
 			reload++;
 			return false;
@@ -116,12 +124,13 @@ public:
 		return true;
 	}
 
-void trafieniePocisk(sf::Sprite* obiektOto,int SizeTab ) {
+void trafieniePocisk(sf::Sprite ply, sf::Sprite* pociski,sf::Sprite* obiektOto,int SizeTab ) {//PRZEBUDOWA
 	for (int i = 0; i < SizeTab; i++) {
 		for (int j = 0; j < iloscPociskow; j++) {
-			if (abs(pocisk[j].getPosition().x - obiektOto[i].getPosition().x) < 18 && abs(pocisk[j].getPosition().y - obiektOto[i].getPosition().y) < 18) {
-				//pocisk[j].getGlobalBounds().intersects(obiektOto[i].getGlobalBounds())
-				pocisk[j].setPosition(plrtank.getPosition());
+			if (abs(pociski[j].getPosition().x - obiektOto[i].getPosition().x) < 18 && abs(pociski[j].getPosition().y - obiektOto[i].getPosition().y) < 18) {
+				//pocisk[j].getGlobalBounds().intersects(obiektOto[i].getGlobalBounds()) //pocisk[j].getPosition().x - obiektOto[i].getPosition().x) < 25 && abs(pocisk[j].getPosition().y - obiektOto[i].getPosition().y) < 25
+				pociski[j].setPosition(-200,-100);//ply.getPosition()
+				std::cout << "trafiono obiekt oto " << i << std::endl;
 				ruchPoc = 0;
 			}
 		}
@@ -129,12 +138,9 @@ void trafieniePocisk(sf::Sprite* obiektOto,int SizeTab ) {
 
 }
 
-	void detZderzenie(sf::Vector2f kierunek) {
-			plrtank.move(kierunek);
-	}
-	void zderzenieObj(sf::Sprite* obiektOto, int rozmarTab) {
-		for (int i = 0; i < rozmarTab; i++) {
-			if (abs(plrtank.getPosition().x - obiektOto[i].getPosition().x) < 42 && abs(plrtank.getPosition().y - obiektOto[i].getPosition().y) < 42) {
+	void zderzenieObj(sf::Sprite* obiektOto, int rozmiarTab) {//W TYPIE OBIEKTU WYBIERAMY CZY OBIEKT JEST ELEMENTEM OTOCZENIA CZY WROGIEM
+		for (int i = 0; i < rozmiarTab; i++) {
+			if (abs(plrtank.getPosition().x - obiektOto[i].getPosition().x) < 40 && abs(plrtank.getPosition().y - obiektOto[i].getPosition().y) < 40) {
 				if (plrtank.getPosition().x < obiektOto[i].getPosition().x)
 					plrtank.setPosition(plrtank.getPosition().x - 1, plrtank.getPosition().y);
 				if (plrtank.getPosition().x > obiektOto[i].getPosition().x)
@@ -143,28 +149,47 @@ void trafieniePocisk(sf::Sprite* obiektOto,int SizeTab ) {
 					plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y - 1);
 				if (plrtank.getPosition().y > obiektOto[i].getPosition().y)
 					plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y + 1);
+				if (rozmiarTab == 1)//TYLKO WTEDY MAMY ZDERZENIE Z WROGIEM (CHYBA ¯E ZMIENIMY ILOŒÆ ELEMENTÓW OBIEKTU)
+					pancerz = pancerz - 0.5;
+				//UTRATA PANCERZA PRZY ZDERZENIU 
 			}
 		}
-		/*if (plrtank.getGlobalBounds().intersects(obiektOto.getGlobalBounds())&&(mat==1||mat==2)) {
-			if (plrtank.getPosition().x < obiektOto.getPosition().x)
-				plrtank.setPosition(plrtank.getPosition().x - 1, plrtank.getPosition().y);
-			if (plrtank.getPosition().x > obiektOto.getPosition().x)
-				plrtank.setPosition(plrtank.getPosition().x + 1, plrtank.getPosition().y);
-			if (plrtank.getPosition().y < obiektOto.getPosition().y)
-				plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y - 1);
-			if (plrtank.getPosition().y > obiektOto.getPosition().y)
-				plrtank.setPosition(plrtank.getPosition().x, plrtank.getPosition().y + 1);
-		}*/
+	}
+	float brodzenie(sf::Sprite* Woda, int iloscObj){//TO NIE CHCE DZIA£AÆ
+		for (int o = 0; o < iloscObj; o++) {
+			if (plrtank.getGlobalBounds().intersects(Woda[o].getGlobalBounds())) {
+				speed = 0.5;
+			}
+			else {
+				speed = 1;
+			}
+					
+		}
+		return speed;
+	}
+
+	bool Win(sf::Sprite orzel) {
+		//METODA DLA WYGRANEJ
+		for (int i = 0; i < iloscPociskow; i++)
+			if (pocisk[i].getGlobalBounds().intersects(orzel.getGlobalBounds())) {
+				wygrana = true;
+				return wygrana;
+			}
+			else
+				wygrana = false;
+		return wygrana;
 	}
 
 	sf::Vector2f zwrocPoz() {
 
 		return plrtank.getPosition();
 	}
-	sf::Sprite zwrocPocisk() {
-		for (int i = 0; i < iloscPociskow; i++) {
-			return pocisk[i];
-		}
+	sf::Sprite* zwrocPocisk() {
+			return pocisk;
+		
+	}
+	sf::Sprite* zwrocPPocisk() {
+		return pocisk;
 	}
 	sf::Sprite zwrocSprite() {
 		return plrtank;
@@ -175,67 +200,40 @@ void trafieniePocisk(sf::Sprite* obiektOto,int SizeTab ) {
 
 };
 
-class pociski {
-	sf::Sprite pocisk;//duszek dla pocisku
-	sf::Texture pocisktxt;//tekstura dla pocisku
-	int IloscPocisk;
-	float pi = 3.14159;
-	float kierunekx;
-	float kieruneky;
-public:
-	pociski() {
-		pocisktxt.loadFromFile("pocisktxt.png");
-		pocisk.setTexture(pocisktxt);
-		pocisk.setOrigin(2, 2);
-	}
-	~pociski() {
-		std::cout << "dekonstruktor\n";
-		delete this;
-	}
-	void strzal(sf::Sprite Ply, sf::RenderWindow& window) {
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-			pocisk.setPosition(Ply.getPosition());
-			kierunekx = cos((Ply.getRotation() - 90) * pi / 180);
-			kieruneky = sin((Ply.getRotation() - 90) * pi / 180);
-			//std::cout << "jestem\n";
-		}
-		pocisk.move(2 * kierunekx, 2 * kieruneky);
-		window.draw(pocisk);
-
-	}
-	bool trafienie(sf::Sprite trafionyObj) {
-		if (pocisk.getGlobalBounds().intersects(trafionyObj.getGlobalBounds())) {
-			std::cout << "trafiono\n";
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-	sf::Vector2f zwrocPoz() {
-		return pocisk.getPosition();
-	}
-	sf::Sprite zwrocSprite() {
-		return pocisk;
-	}
-};
-
 //PRZECIWNICY dziedzicz¹ niektóre metody po graczu
 class Enemy :public Player {//klasa dla botów -  przeciwników
 private:
+	int idBot;
 	sf::Texture enmtxt;//tekstura
 	sf::Sprite* enemy;//tablica obiektow
 	sf::Vector2f poz;
 	int N;//liczba obiektow graf
 	std::random_device rd;//randomizacja po³o¿enia 
+	int pancerzEnemy;
+	bool zestrzelony;
+	//OBS£UGA POCISKOW
+	sf::Sprite* pocisk;//duszek dla pocisku
+	sf::Texture pocisktxt;//tekstura dla pocisku
+	sf::Vector2f* kierPoc;
+	int iloscPociskow;
 
-public:
-	int n = 0;
-	int rotMem = 0;
+	int reload;
+	bool flagaStrzal;
+	int czasPrzel;
+	int rotMem;
+	int ruchPoc;
 	//zmienne sterowania botów
-	int ruchBot = 300, katBot = 90;
-	Enemy(int N1) {
-		N = N1;
+	int ruchBot, rotBot;//
+	int n;
+public:
+	
+
+	Enemy() {
+		N = 1; 
+		n = 0;
+		ruchBot = 300;
+		rotBot = 90;
+		pancerzEnemy = 100;
 		enemy = new sf::Sprite[N];
 		std::mt19937 gen(rd());
 		std::uniform_int_distribution<> distX(1, 7);
@@ -246,67 +244,123 @@ public:
 			enemy[i].setPosition(distX(gen)*50-25,distY(gen) * 60 - 30);
 			enemy[i].setOrigin(25, 30);//œrodek sprita
 		}
+		//dla pociskow
+		iloscPociskow = 1;
+		zestrzelony = false;
+		pocisk = new sf::Sprite[iloscPociskow];
+		kierPoc = new sf::Vector2f[iloscPociskow];
+
+	}
+	~Enemy() {
+		delete[] enemy;
 	}
 
 	void ruch_bot(sf::RenderWindow& window) {
 		float speed = 0.4;
-		float pi = 3.14159;
 		float rotacja;
 		for (int i = 0; i < N; i++) {
 			rotacja = enemy[i].getRotation() - 90;
-			n++;
-			if (n <= katBot) {
+			n++;//liczba kroków cyklu 
+			if (n <= rotBot) {//cykl obrotu
 				enemy[i].rotate(rotMem);
 			}
-			if (katBot < n < (katBot + ruchBot)) {
+			if (rotBot < n < (rotBot + ruchBot)) {//cykl ruchu
 				enemy[i].move(speed * cos(rotacja * pi / 180), speed * sin(rotacja * pi / 180));
 			}
-			if (n > (katBot + ruchBot)) {
+			if (n > (rotBot + ruchBot)) {//cykl losowania nowej pozycji
 				std::mt19937 gen(rd());
 				std::uniform_int_distribution<> rotGen(-1, 1);//tu trzenba pokombinowac
-				rotMem = rotGen(gen);
+				rotMem = rotGen(gen);//losowanie nowego kierunku
 				n = 0;
 			}
 			//ograniczenie do okna
 			if (enemy[i].getPosition().x <= 0) {
 				enemy[i].move(1, 0);
-				//enemy[i].rotate(2);
+				enemy[i].rotate(2);
 			}
 			if (enemy[i].getPosition().x >= window.getSize().x) {
 				enemy[i].move(-1, 0);
-				//enemy[i].rotate(2);
+				enemy[i].rotate(2);
 			}
 			if (enemy[i].getPosition().y <= 0) {
 				enemy[i].move(0, 1);
-				//enemy[i].rotate(2);
+				enemy[i].rotate(2);
 			}
 			if (enemy[i].getPosition().y >= window.getSize().y) {
 				enemy[i].move(0, -1);
-				//enemy[i].rotate(2);
+				enemy[i].rotate(2);
 			}
 		}
 	}
 
-	void strzalBot(sf::Sprite ply) {
+	void strzalBot(sf::Sprite ply, sf::RenderWindow& window, sf::Sprite orzel) {
+		flagaStrzal = przelPoc(200);//czas w cyklach
+		pocisktxt.loadFromFile("pocisktxt.png");
 		for (int i = 0; i < N; i++) {
-			int celNaPly; //= (atan((enemy[i].getPosition().x - ply.getPosition().x) / (enemy[i].getPosition().y - ply.getPosition().y)))*180/pi;
-			celNaPly=(asin((enemy[i].getPosition().x-ply.getPosition().x)/sqrt(pow(enemy[i].getPosition().x - ply.getPosition().x,2)+pow(enemy[i].getPosition().y - ply.getPosition().y,2)))) * 180 / pi;
-			int rotEne = (int(enemy[i].getRotation())%180)+90;///180) * pi;
-			int cel = rotEne - celNaPly;
-			//std::cout << "wzaje pol: " << celNaPly << std::endl;
-			//std::cout << "enemy rot: " << rotEne << std::endl;
-			//std::system("cls");
-			//std::cout << "suma: " << cel << std::endl;//dzia³a
-			if(cel==90)
-				std::cout << "strzalll" << std::endl;
+			int wzaPoz = 0;
+			int wzaPoz1 = 0;
+			int botToOrzel = 0;
+			int rotEne = int(enemy[i].getRotation());
+			wzaPoz1 = (acos((enemy[i].getPosition().y - ply.getPosition().y) / sqrt(pow(enemy[i].getPosition().x - ply.getPosition().x, 2) + pow(enemy[i].getPosition().y - ply.getPosition().y, 2)))) * 180 / pi;
+			botToOrzel = (acos((enemy[i].getPosition().y - orzel.getPosition().y) / sqrt(pow(enemy[i].getPosition().x - orzel.getPosition().x, 2) + pow(enemy[i].getPosition().y - orzel.getPosition().y, 2)))) * 180 / pi;
+			if (ply.getPosition().x - enemy[i].getPosition().x < 0)//TAK ABY BY£O ZGODNE Z OBROTEM BOTA
+				wzaPoz = 360 - wzaPoz1;
+			else
+				wzaPoz = wzaPoz1;
+			if (orzel.getPosition().x - enemy[i].getPosition().x < 0)
+				botToOrzel = 360 - botToOrzel;
+			int cel = abs(rotEne - wzaPoz);
+			int celNaOrla = abs(rotEne - botToOrzel);
+			if ((cel <= 10 ||celNaOrla <=10 ) && flagaStrzal == true && iloscPociskow > 0) {
+				for (int j = 0; j < iloscPociskow; j++) {////auto& i:pocisk
+					
+					pocisk[j].setTexture(pocisktxt);
+					pocisk[j].setPosition(enemy[i].getPosition());
+					pocisk[j].setOrigin(2, 2);
+					kierPoc[j].x = cos((enemy[i].getRotation() - 90) * pi / 180);
+					kierPoc[j].y = sin((enemy[i].getRotation() - 90) * pi / 180);
+					flagaStrzal = false;
+					ruchPoc = 1;
+					//return pocisk[i];
+				}
 
+			}
+			for (int i = 0; i < iloscPociskow; i++) {
+				//std::cout << "drukuj" << kierPoc.x<< std::endl;
+				if (ruchPoc == 1) {
+					pocisk[i].move(4 * kierPoc[i].x, 4 * kierPoc[i].y);
+					window.draw(pocisk[i]);
+				}
 
+			}
 
+		}
+	}
+
+	void trafieniePocisk(sf::Sprite ply,char typ, sf::Sprite* pociski, sf::Sprite* obiektOto, int SizeTab) {//PRZEBUDOWA typ - dla okreœlenia typu
+		for (int j = 0; j < iloscPociskow; j++) {
+			for (int i = 0; i < SizeTab; i++) {
+				if (typ == 'W' && abs(pociski[j].getPosition().x - obiektOto[i].getPosition().x) < 18 && abs(pociski[j].getPosition().y - obiektOto[i].getPosition().y) < 18) {
+					pociski[j].setPosition(-200, -100);//umieszczenie pocisku poza obszarem planszy
+					std::cout << "BOT trafiono obiekt oto " << i << std::endl;
+					ruchPoc = 0;
+				}
+				if (typ == 'G' && abs(pociski[j].getPosition().x - ply.getPosition().x) < 20 && abs(pociski[j].getPosition().y - ply.getPosition().y) < 20) {
+					pociski[j].setPosition(-200, -100);
+					std::cout << "PLEYER trafiony przez " << j << std::endl;
+					ruchPoc = 0;
+				}
+			}
+			
 
 		}
 
 	}
-	void zderzeniaBot(sf::Sprite sriteGracz) {
+	//POCISKI LEPIEJ ZROBIC NA WEKTORACH/KONTENERACH
+	//sf::Sprite strzal(sf::RenderWindow& window) {//metoda dla pocisku
+	//	//std::vector<sf::Sprite> pocisk
+
+	void zderzeniaBot() {//zderzenia pomiêdzy botami - ZBENDNE PRZY POJEDYÑCZYCH OBIEKTACH
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < N; j++) {
 				if (enemy[i].getGlobalBounds().intersects(enemy[j].getGlobalBounds())) {
@@ -330,20 +384,24 @@ public:
 			}
 		}
 	}
-	void trafiPoc(sf::Sprite pocisk) {
+	bool trafiPoc(sf::Sprite* pocisk,int id) {//traienie przez pocisk
+		idBot = id;
 		for (int i = 0; i < N; i++) {
-			if (pocisk.getGlobalBounds().intersects(enemy[i].getGlobalBounds())) {
-				std::cout << "Trafiony enemy " << i << std::endl;
+			if (pocisk[0].getGlobalBounds().intersects(enemy[i].getGlobalBounds())) {
+				std::cout << "Trafiony enemy " << id <<"pancerz"<<pancerzEnemy<< std::endl;
 				//TUTAJ PROCEDURA OBS£UGI TRAFIEÑ BOTÓW
-
-
-
-
-
-
+				pancerzEnemy = pancerzEnemy - 1;//-5 do pancerza
+				if (pancerzEnemy <= 0) {
+					std::cout << "Wrog zestrzelony " << id << std::endl;
+					enmtxt.loadFromFile("teksturaPrzeciwnikKaput.png");
+					enemy[i].setTexture(enmtxt);
+					zestrzelony = true;	
+				}
 			}
 		}
+		return zestrzelony;
 	}
+	
 	void draw(sf::RenderWindow& window) {
 		for (int i = 0; i < N; i++) {
 			window.draw(enemy[i]);
@@ -351,6 +409,12 @@ public:
 	}
 	sf::Sprite* zwroctabSprite() {
 			return enemy;
+	}
+	sf::Sprite zwrocSprite(int id) {
+		return enemy[id];
+	}
+	sf::Sprite* zwrocPoc() {
+		return pocisk;
 	}
 	//ZDERZENIA NA PODSTAWIE ODLEG£OŒCI:
 	//abs(enemy[i].getPosition().x - mapaGry[j].getPosition().x) < 40 && abs(enemy[i].getPosition().y - mapaGry[j].getPosition().y) < 40
@@ -512,10 +576,6 @@ public:
 		std::cout << o << "," << p << "," << r << "," << s << std::endl;
 
 	}
-	void niszczOto() {
-
-
-	}
 
 	 sf::Vector2f kierKol(sf::Sprite plr_poz) {//iteracja po wszystkich utworzonych obiektach ototczenia , w poszukwaniu kolizji
 		 sf::Vector2f kierunek;
@@ -544,19 +604,22 @@ public:
 			
 		}
 	}
+	 sf::Sprite zwrocOrla(int id) {//ZWRACA SPRITE OR£A ABY SPRAWDZIÆ WYGRAN¥
+		 return orzel[id];
+	 }
 
 	 sf::Sprite* ZwrocMapeGry(int mat) {
 		 return &mapaGry[mat][0];
 	 }
-	 void zwrotKolSprite(sf::Sprite SprEnemyTab[]) {//TUTAJ MO¯NA DODAÆ 
-		for (int i = 0; i < O; i++) {
-			for (int j=0; j < 10; j++) {
-				if (SprEnemyTab[j].getGlobalBounds().intersects(mapaGry[0][i].getGlobalBounds()))
-					std::cout << "kolizja bota "<<j<<" z "<<i<<std::endl;
-				SprEnemyTab[j].setPosition(SprEnemyTab[j].getPosition().x-1, SprEnemyTab[j].getPosition().y);
-				}
-		}
-	}
+	// void zwrotKolSprite(sf::Sprite SprEnemyTab[]) {//TUTAJ MO¯NA DODAÆ 
+	//	for (int i = 0; i < O; i++) {
+	//		for (int j=0; j < 10; j++) {
+	//			if (SprEnemyTab[j].getGlobalBounds().intersects(mapaGry[0][i].getGlobalBounds()))
+	//				std::cout << "kolizja bota "<<j<<" z "<<i<<std::endl;
+	//			SprEnemyTab[j].setPosition(SprEnemyTab[j].getPosition().x-1, SprEnemyTab[j].getPosition().y);
+	//			}
+	//	}
+	//}
 	 int zwrocRozTab(int mat) {
 		 if (mat == 0) {
 			 return O;
@@ -571,19 +634,18 @@ public:
 			 return S;
 		 }
 	 }
-	 void trafiPoc(sf::Sprite pocisk) {
+	 void trafiPoc(sf::Sprite* pocisk) {//PRZYDA£A BY SIE FUNKCJA ZWRACANIA ILOSCI POCISKÓW
 		 for (int i = 0; i < O; i++) {
-			 if (pocisk.getGlobalBounds().intersects(mapaGry[0][i].getGlobalBounds())) {
-				 //std::cout << "Trafiony otoczenie typu cegla " << i << " ma jeszcze " << mapaDes[0][i]<< " wytrzymalosci" << std::endl;
+			 if (pocisk[0].getGlobalBounds().intersects(mapaGry[0][i].getGlobalBounds())) {
+				 std::cout << "Trafiony otoczenie typu cegla " << i << " ma jeszcze " << mapaDes[0][i]<< " wytrzymalosci" << std::endl;
 				 --mapaDes[0][i];
 				 if (mapaDes[0][i] == 0)
 					 mapaGry[0][i].setPosition(-100, -100);//tymczasowe przeniesienie poza plansze
-				 delete  *mapaGry[0][i];
 				 //AKCJA DLA ZDERZENIA POCISKU Z CEG£¥
 			 }
 		 }
 		 for (int i = 0; i < P; i++) {
-			 if (pocisk.getGlobalBounds().intersects(mapaGry[1][i].getGlobalBounds())) {
+			 if (pocisk[0].getGlobalBounds().intersects(mapaGry[1][i].getGlobalBounds())) {
 				 std::cout << "Trafiony otoczenie typu skala " << i << " ma jeszcze " << mapaDes[1][i] << " wytrzymalosci" << std::endl;
 				 --mapaDes[1][i];
 				 if (mapaDes[1][i] == 0)
@@ -592,13 +654,6 @@ public:
 			 }
 		 }
 	 }
-	//metoda czy trafioona - sprawdza czy obiekt zosta³ trafiony pociskiem
-	void czyTrafiony(sf::Sprite pocisk, int N) {
-		for (int j = 0; j < N; j++)
-			if (pocisk.getGlobalBounds().intersects(wall[j].getGlobalBounds())) {
-				wall[j].setPosition(1000, 1000);//przeniesienie elementu poza plansze
-			}
-	}
 	void generacja(int poziom) {//generatior rozmieszczenia elementów
 		int const N = 50;//tymczasowo, domyœlnie dynamiczna alokacja pam.
 		if (poziom == 1)
@@ -669,13 +724,17 @@ void Opoznienie(int opoznienie)
 }
 int main()
 {
+	int E = 3;//LICZBA WROGOW
+	bool wygrana = false;
+	bool przegrana = false;
 	sf::RenderWindow window(sf::VideoMode(800, 600), "TANK 2021");
 	sf::Vector2u size = window.getSize();
 	unsigned int width = size.x;
 	unsigned int hight = size.y;
 	Player p1;
-	Enemy e1(1);
+	Enemy* e1;
 	ObjSrd s1(200);
+	e1 = new Enemy[E];
 	while (window.isOpen())
 	{
 
@@ -687,34 +746,52 @@ int main()
 
 		}
 		window.clear();
-		p1.ruch(window);
-		s1.draw(window,2);
-		//p1.detZderzenie(s1.kierKol(p1.zwrocSprite()));
-		p1.zderzenieObj(s1.ZwrocMapeGry(0), s1.zwrocRozTab(0));//m¿na urzyæ funkcji zwracaj¹cej rozmiar tab
+		p1.brodzenie(s1.ZwrocMapeGry(2), s1.zwrocRozTab(2));//NIE DZIA£A
+		p1.ruch(window, p1.brodzenie(s1.ZwrocMapeGry(2), s1.zwrocRozTab(2)));
+		s1.draw(window, 2);//WODA
+		p1.zderzenieObj(s1.ZwrocMapeGry(0), s1.zwrocRozTab(0));
 		p1.zderzenieObj(s1.ZwrocMapeGry(1), s1.zwrocRozTab(1));
-		p1.zderzenieObj(e1.zwroctabSprite(), 2);
-		e1.ruch_bot(window);
-		e1.zderzenieObj(s1.ZwrocMapeGry(0), s1.zwrocRozTab(0));//stabilne dla cegiel
-		e1.zderzenieObj(s1.ZwrocMapeGry(1), s1.zwrocRozTab(1));//stabilne dla kamieni
-		e1.zderzenieObj(p1.zwrocPSprite(), 1);
-		e1.zderzeniaBot(p1.zwrocSprite());
-		p1.trafieniePocisk(s1.ZwrocMapeGry(0),s1.zwrocRozTab(0));
-		p1.trafieniePocisk(s1.ZwrocMapeGry(1),s1.zwrocRozTab(1));
-		p1.trafieniePocisk(e1.zwroctabSprite(), 10);
-			//if (po.trafienie(e1[i].zwrocSprite()) == true)
-		////po.strzal(p1.zwrocSprite(), window);
-		////s1.czyTrafiony(po.zwrocSprite(), 50);
+
+		for (int k = 0; k < E; k++) {//testy z pentlami
+			if (e1[k].trafiPoc(p1.zwrocPocisk(), k) == false) {//test dla nieruchomego zestrzelonego bota
+				e1[k].ruch_bot(window);
+				e1[k].strzalBot(p1.zwrocSprite(), window, s1.zwrocOrla(1));
+			}
+			e1[k].zderzenieObj(s1.ZwrocMapeGry(0), s1.zwrocRozTab(0));//stabilne dla cegiel
+			e1[k].zderzenieObj(s1.ZwrocMapeGry(1), s1.zwrocRozTab(1));//stabilne dla kamieni
+			e1[k].zderzenieObj(p1.zwrocPSprite(), 1);
+			//PENTLA DLA ZDEREÑ POMIÊDZY BOTAMI
+			for (int l = 0; l < E; l++) {
+				e1[k].zderzenieObj(e1[l].zwroctabSprite(), 1);
+			}
+			s1.trafiPoc(e1[k].zwrocPoc());
+			p1.zderzenieObj(e1[k].zwroctabSprite(), 1);
+			e1[k].trafieniePocisk(e1[k].zwrocSprite(k),'W', e1[k].zwrocPoc(), s1.ZwrocMapeGry(0), s1.zwrocRozTab(0));
+			e1[k].trafieniePocisk(e1[k].zwrocSprite(k),'W', e1[k].zwrocPoc(), s1.ZwrocMapeGry(1), s1.zwrocRozTab(1));
+			e1[k].trafieniePocisk(p1.zwrocSprite(),'G', e1[k].zwrocPoc(), s1.ZwrocMapeGry(1), s1.zwrocRozTab(1));//COŒ TU NIE GRA ALE DZiA£A - MA OBS£UGIWAC ZDERZENIE POCISKU Z PLAYEREM
+			p1.trafieniePocisk(p1.zwrocSprite(), p1.zwrocPPocisk(), e1[k].zwroctabSprite(), 1);
+			przegrana = e1[k].Win(s1.zwrocOrla(1));
+			e1[k].draw(window);
+		}
+
+		p1.trafieniePocisk(p1.zwrocSprite(), p1.zwrocPPocisk(), s1.ZwrocMapeGry(0), s1.zwrocRozTab(0));
+		p1.trafieniePocisk(p1.zwrocSprite(), p1.zwrocPPocisk(), s1.ZwrocMapeGry(1), s1.zwrocRozTab(1));
 		p1.strzal(window);
-		s1.draw(window,0);//rysowanie cegiel
-		s1.draw(window,1);//rysowanie kamienia
-		e1.trafiPoc(p1.zwrocPocisk());
-		s1.trafiPoc(p1.zwrocPocisk());
-		e1.strzalBot(p1.zwrocSprite());
+		s1.draw(window, 0);//rysowanie cegiel
+		s1.draw(window, 1);//rysowanie kamienia
+		s1.trafiPoc(p1.zwrocPocisk());//obs³uga trafienia obiektów otoczenia
 		p1.draw(window);
-		e1.draw(window);
-		s1.draw(window,3);//rysowanie zaroœli
+		s1.draw(window, 3);//rysowanie zaroœli
+		wygrana = p1.Win(s1.zwrocOrla(0));
 		window.display();
 		Opoznienie(1);
+		if (wygrana == true) {
+			std::cout << "WYGRALES GRE\n";
+			while (1) {}
+			}
+		else if (przegrana == true)
+			std::cout << "PRZEGRALES GRE\n";
+
 	}
 	return 0;
 }
