@@ -144,6 +144,7 @@
   <ItemGroup>
     <ClCompile Include="Źródło.cpp" />
     <ClCompile Include="silnik.cpp" />
+    <ClCompile Include="menuGry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h" />

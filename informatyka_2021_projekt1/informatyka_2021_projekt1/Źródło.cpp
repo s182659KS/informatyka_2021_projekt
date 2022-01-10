@@ -257,14 +257,13 @@ private:
 	sf::Texture pocisktxt;//tekstura dla pocisku
 	sf::Vector2f* kierPoc;
 	int iloscPociskow;
-
 	int reload;
 	bool flagaStrzal;
 	int czasPrzel;
 	int rotMem;
 	int ruchPoc;
 	//zmienne sterowania botów
-	int ruchBot, rotBot;//
+	int ruchBot, rotBot;//iloœæ kroków do przodu oraz k¹t obrotu
 	int n;
 public:
 	
@@ -272,8 +271,8 @@ public:
 	Enemy() {
 		N = 1; 
 		n = 0;
-		ruchBot = 300;
-		rotBot = 90;
+		ruchBot = 300;//ilosc kroków bota
+		rotBot = 90;//k¹t obrotu
 		pancerzEnemy = 100;
 		enemy = new sf::Sprite[N];
 		std::mt19937 gen(rd());
