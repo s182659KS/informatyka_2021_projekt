@@ -276,8 +276,8 @@ public:
 		pancerzEnemy = 100;
 		enemy = new sf::Sprite[N];
 		std::mt19937 gen(rd());
-		std::uniform_int_distribution<> distX(1, 7);
-		std::uniform_int_distribution<> distY(1, 2);
+		std::uniform_int_distribution<> distX(10, 15);//losowa pozycja botów w osi X
+		std::uniform_int_distribution<> distY(1, 2);// losowa pozycja botów w osi Y
 		enmtxt.loadFromFile("teksturaPrzeciwnik.png");
 		for (int i = 0; i < N; i++) {
 			enemy[i].setTexture(enmtxt);
