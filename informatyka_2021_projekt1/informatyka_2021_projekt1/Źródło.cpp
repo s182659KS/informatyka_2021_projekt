@@ -17,34 +17,162 @@ Gra bêdzie mia³a kilka poziomów, ró¿ni¹cych siê poziomem trudnoœci rozgrywki.
 #include "silnik.cpp"
 #pragma warning(disable:4996)
 	
-
+float pi = 3.14159;
 class Interfejs{
 private:
 	sf::Font font;
-	sf::Text koniecGry;
+	sf::Text koniecGryW;
+	sf::Text koniecGryP;
+	sf::RectangleShape menuAkcji;
+	sf::Vector2f rozOknaMenu;
+	sf::Text help[3];
+	sf::Text menuEsc[3];
+	int itm;//iterator dla wyboru
+//interfejs wyswietlany w trakcie gry
+	sf::Text parametrGracz[3];
 public:
-	Interfejs() {
+	Interfejs(sf::RenderWindow& window) {
 		//laduj czcionke
+
 		if (!font.loadFromFile("CSStamps.ttf"))
 		{
 			return;
 		}
-		koniecGry.setFont(font);
-		koniecGry.setString("KONIEC GRY");
-		koniecGry.setFillColor(sf::Color::White);
-		koniecGry.setPosition(sf::Vector2f(250, 10));
-		koniecGry.setCharacterSize(60);
+		koniecGryW.setFont(font);
+		koniecGryW.setString("ZWYCIENSTWO");
+		koniecGryW.setOutlineThickness(2);
+		koniecGryW.setOutlineColor(sf::Color::Red);
+		koniecGryW.setFillColor(sf::Color::White);
+		koniecGryW.setPosition(sf::Vector2f(window.getSize().x-100, window.getSize().y-30));
+		koniecGryW.setCharacterSize(60);
 
+		koniecGryP.setFont(font);
+		koniecGryP.setString("KONIEC GRY");
+		koniecGryP.setFillColor(sf::Color::White);
+		koniecGryP.setPosition(sf::Vector2f(window.getSize().x - 100, window.getSize().y - 30));
+		koniecGryP.setCharacterSize(60);
+
+
+		//Wyœwietlenie menu rozgrywki
+		rozOknaMenu.x = 400;
+		rozOknaMenu.y = 400;
+		menuAkcji.setSize(rozOknaMenu);
+		menuAkcji.setOrigin(rozOknaMenu.x / 2, rozOknaMenu.y / 2);
+		menuAkcji.setPosition(window.getSize().x / 2, window.getSize().y / 2);
+		menuAkcji.setOutlineThickness(5);
+		menuAkcji.setOutlineColor(sf::Color::Red);
+		menuAkcji.setFillColor(sf::Color::Black);
+
+		//tekst help-u
+		for (int i = 0; i < 3; i++) {
+			help[i].setFont(font);
+			help[i].setFillColor(sf::Color::White);
+		}
+
+		help[0].setString("HELP");
+		help[0].setPosition((window.getSize().x / 2) - rozOknaMenu.x / 2 + 20, window.getSize().y / 2 - rozOknaMenu.y / 2 + 25);
+		help[0].setCharacterSize(40);
+		help[1].setString("W grze wcielasz siê w dowódce czolgu.\nTwoim zadaniem jest zniszczenie bazy wroga,\nzanim on zniszczy twoja baze\nSterowanie:\n<Up> - jazda do przodu\n<Down> - jazda wstecz\n<Left> - Obrót w lewo\n<Right> - obrót w prawo\n<W> - wystrzal");
+		help[1].setPosition((window.getSize().x / 2) - rozOknaMenu.x / 2 + 20, menuAkcji.getPosition().y - 100);
+		help[1].setCharacterSize(20);
+		help[2].setString("Aby konynuowac gre nacisnij: <Enter>");
+		help[2].setPosition((window.getSize().x / 2) - rozOknaMenu.x / 2 + 15, window.getSize().y / 2 + rozOknaMenu.y / 2 - 25);
+		help[2].setCharacterSize(20);
+
+		//menu wyjœcia
+		for (int i = 0; i < 3; i++) {
+			menuEsc[i].setFont(font);
+			menuEsc[i].setFillColor(sf::Color::White);
+			menuEsc[i].setCharacterSize(40);
+		}
+		menuEsc[0].setString("KONTYNUJ");
+		menuEsc[0].setPosition(menuAkcji.getPosition().x - 100, menuAkcji.getPosition().y - menuAkcji.getSize().y / 4 - 40);
+		menuEsc[1].setString("ZAPISZ GRE");
+		menuEsc[1].setPosition(menuAkcji.getPosition().x - 100, menuAkcji.getPosition().y - 40);
+		menuEsc[2].setString("WYJDZ Z GRY");
+		menuEsc[2].setPosition(menuAkcji.getPosition().x - 100, menuAkcji.getPosition().y + menuAkcji.getSize().y / 4 - 40);
+		//parametry rozgrywki
+		for (int i = 0; i < 3; i++) {
+			parametrGracz[i].setFont(font);
+			parametrGracz[i].setFillColor(sf::Color::White);
+			parametrGracz[i].setCharacterSize(20);
+		}
+		parametrGracz[0].setPosition(20,5);
+		parametrGracz[1].setPosition(140,5);
+		parametrGracz[2].setPosition(window.getSize().x-100, 5);
 
 	}
-	void draw(sf::RenderWindow& window){
-		window.draw(koniecGry);
-	}
+	void draw(sf::RenderWindow& window, sf::Event& event, int opcja){
 
+			//window.draw(menuAkcji);
+			if (opcja == 1) {//menu helup
+				window.draw(menuAkcji);
+				for (int i = 0; i < 3; i++)
+					window.draw(help[i]);
+			}
+			if (opcja == 2) {//menu wyjœcia
+				window.draw(menuAkcji);
+				for (int i = 0; i < 3; i++)
+					window.draw(menuEsc[i]);
+			}
+			if (opcja == 3) {//napis wygranej
+				window.draw(koniecGryW);
+			}
+			if (opcja == 4) {//napis przegranej
+				window.draw(koniecGryP);
+			}
+	}
+	int wybor(sf::Event event, sf::RenderWindow& window) {
+		while (window.pollEvent(event)) {
+			if (event.key.code == sf::Keyboard::Down) {
+				if (itm >= 0 && itm < 3)
+					menuEsc[itm].setFillColor(sf::Color::White);
+				menuEsc[itm].setStyle(sf::Text::Regular);
+				itm++;
+				if (itm >= 3)
+					itm = 0;
+				menuEsc[itm].setFillColor(sf::Color::Red);
+				menuEsc[itm].setStyle(sf::Text::Bold);
+			}
+			else if (event.key.code == sf::Keyboard::Up) {
+				if (itm >= 0 && itm < 3)
+					menuEsc[itm].setFillColor(sf::Color::White);
+				menuEsc[itm].setStyle(sf::Text::Regular);
+				itm--;
+				if (itm < 0)
+					itm = 2;
+				menuEsc[itm].setFillColor(sf::Color::Red);
+				menuEsc[itm].setStyle(sf::Text::Bold);
+			}
+			else if (event.key.code == sf::Keyboard::Enter) {
+				return itm;
+			}
+		}
+	}
+	void getStanPly(sf::RenderWindow& window, int punkty, int pociski, int pancerz) {
+		std::string punktyStr;
+		std::string pociskiStr;
+		std::string pancerzStr;
+		punktyStr = std::to_string(punkty);
+		pociskiStr = std::to_string(pociski);
+		pancerzStr = std::to_string(pancerz);
+		parametrGracz[0].setString("Pancerz:" + pancerzStr);
+		parametrGracz[1].setString("Pociski:" + pociskiStr);
+		parametrGracz[2].setString("Punkty:" + punktyStr);
+		for (int i = 0; i < 3; i++)
+			window.draw(parametrGracz[i]);
+
+	}
 };
-float pi = 3.14159;
 
 //GRACZ
+//struct Gracz {
+//	float pancerz;
+//	int punkty;
+//	int pociski;
+//	std::string nazwaGracz;
+//
+//};
 class Player {//klasa dla gracza
 private:
 	sf::Texture plrtxt;//tekstura dla gracza
@@ -52,14 +180,14 @@ private:
 	sf::Sprite* pocisk;//duszek dla pocisku
 	sf::Texture pocisktxt;//tekstura dla pocisku
 	sf::Vector2f* kierPoc;
+	//parametry dla gracza
 	float pancerz;
+	int punkty;
+	int pociski;
 	sf::Vector2f pozycja;//wspolrzedne gracza
-	float kierunekX = 0;
-	float kierunekY = 0;
 	float speed;//predkoœæ bota
 	//dla pocisków:
 	int iloscPociskow;
-
 	int reload;
 	bool flagaStrzal;
 	int czasPrzel;
@@ -67,14 +195,18 @@ private:
 	bool wygrana;
 public:
 	Player();
+	Player(int punktySet, int pociskiSet, float pancerzSet, float speedSet);
 	void draw(sf::RenderWindow& window);
-	float ruch(sf::RenderWindow& window, float speedPly);
+	float ruch(sf::RenderWindow& window, float speedPly, bool pauza);
 	sf::Sprite strzal(sf::RenderWindow& window);
 	bool przelPoc(int czasPrzel);
 	void trafieniePocisk(sf::Sprite ply, sf::Sprite* pociski, sf::Sprite* obiektOto, int SizeTab);
 	void zderzenieObj(sf::Sprite* obiektOto, int rozmiarTab);
 	float brodzenie(sf::Sprite* Woda, int iloscObj);
 	bool Win(sf::Sprite orzel);
+	int zwrocStanPly(int id);
+	int* zwrocPanc();
+	int* zwrocPunkty();
 	sf::Vector2f zwrocPoz();
 	sf::Sprite* zwrocPocisk();
 	sf::Sprite* zwrocPPocisk();
@@ -83,10 +215,13 @@ public:
 	int ruchPoc;
 };
 
-
-	Player::Player() {
+	Player::Player(){}
+	Player::Player(int punktySet, int pociskiSet, float pancerzSet, float speedSet) {
 		iloscPociskow = 1;
-		//speed = 1;
+		punkty = punktySet;
+		pociski = pociskiSet;
+		pancerz = pancerzSet;
+		speed = speedSet;
 		pozycja.x = 200;
 		pozycja.y = 550;
 		plrtxt.loadFromFile("teksturaPlayer.png");
@@ -102,10 +237,10 @@ public:
 		window.draw(plrtank);
 
 	}
-	float Player::ruch(sf::RenderWindow& window, float speedPly) {//sterowanie pojazdem gracza
+	float Player::ruch(sf::RenderWindow& window, float speedPly, bool pauza) {//sterowanie pojazdem gracza
 		float rotacja;
-		float pi = 3.14159;
 		rotacja = plrtank.getRotation() - 90;
+		if (!pauza == true) {
 		//g³owne sterowanie
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 			plrtank.move(speedPly * cos(rotacja * pi / 180), speedPly * sin(rotacja * pi / 180));
@@ -124,12 +259,14 @@ public:
 			plrtank.move(0, 1);
 		if (plrtank.getPosition().y >= window.getSize().y)
 			plrtank.move(0, -1);
+	}
 		return rotacja;
 	}
 	sf::Sprite Player::strzal(sf::RenderWindow& window) {//metoda dla pocisku
 		flagaStrzal = przelPoc(200);
 		pocisktxt.loadFromFile("pocisktxt.png");
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)&&flagaStrzal==true) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)&&flagaStrzal==true&&pociski>0) {
+			pociski--;
 			for (int i = 0; i < iloscPociskow; i++) {
 				ruchPoc = 1;
 				//pocisk[i].setColor(sf::Color::White);
@@ -164,7 +301,6 @@ public:
 			reload = 0; 
 		return true;
 	}
-
 void Player::trafieniePocisk(sf::Sprite ply, sf::Sprite* pociski,sf::Sprite* obiektOto,int SizeTab ) {//PRZEBUDOWA
 	for (int i = 0; i < SizeTab; i++) {
 		for (int j = 0; j < iloscPociskow; j++) {
@@ -178,7 +314,6 @@ void Player::trafieniePocisk(sf::Sprite ply, sf::Sprite* pociski,sf::Sprite* obi
 	}
 
 }
-
 	void Player::zderzenieObj(sf::Sprite* obiektOto, int rozmiarTab) {//W TYPIE OBIEKTU WYBIERAMY CZY OBIEKT JEST ELEMENTEM OTOCZENIA CZY WROGIEM
 		for (int i = 0; i < rozmiarTab; i++) {
 			if (abs(plrtank.getPosition().x - obiektOto[i].getPosition().x) < 40 && abs(plrtank.getPosition().y - obiektOto[i].getPosition().y) < 40) {
@@ -208,7 +343,6 @@ void Player::trafieniePocisk(sf::Sprite ply, sf::Sprite* pociski,sf::Sprite* obi
 		}
 		return speed;
 	}
-
 	bool Player::Win(sf::Sprite orzel) {
 		//METODA DLA WYGRANEJ
 		for (int i = 0; i < iloscPociskow; i++)
@@ -220,7 +354,20 @@ void Player::trafieniePocisk(sf::Sprite ply, sf::Sprite* pociski,sf::Sprite* obi
 				wygrana = false;
 		return wygrana;
 	}
-
+	int Player::zwrocStanPly(int id) {
+		if (id == 1)
+			return int(pancerz);
+		if (id == 2)
+			return punkty;
+		if (id == 3)
+			return pociski;
+	}
+	int* Player::zwrocPanc() {
+		return &pociski;
+	}
+	int* Player::zwrocPunkty() {
+		return &punkty;
+	}
 	sf::Vector2f Player::zwrocPoz() {
 
 		return plrtank.getPosition();
@@ -252,6 +399,7 @@ private:
 	std::random_device rd;//randomizacja po³o¿enia 
 	int pancerzEnemy;
 	bool zestrzelony;
+	float speed;
 	//OBS£UGA POCISKOW
 	sf::Sprite* pocisk;//duszek dla pocisku
 	sf::Texture pocisktxt;//tekstura dla pocisku
@@ -271,6 +419,7 @@ public:
 	Enemy() {
 		N = 1; 
 		n = 0;
+		speed = 1;
 		ruchBot = 300;//ilosc kroków bota
 		rotBot = 90;//k¹t obrotu
 		pancerzEnemy = 100;
@@ -291,15 +440,11 @@ public:
 		kierPoc = new sf::Vector2f[iloscPociskow];
 
 	}
-	~Enemy() {
-		delete[] enemy;
-	}
 
 	void ruch_bot(sf::RenderWindow& window) {
-		float speed = 1;
 		float rotacja;
 		for (int i = 0; i < N; i++) {
-			rotacja = enemy[i].getRotation() - 90;
+			rotacja = enemy[i].getRotation() - 90;//ustawienie w³aœciwej orietacji pojazdu
 			n++;//liczba kroków cyklu 
 			if (n <= rotBot) {//cykl obrotu
 				enemy[i].rotate(rotMem);
@@ -366,7 +511,6 @@ public:
 
 			}
 			for (int i = 0; i < iloscPociskow; i++) {
-				//std::cout << "drukuj" << kierPoc.x<< std::endl;
 				if (ruchPoc == 1) {
 					pocisk[i].move(4 * kierPoc[i].x, 4 * kierPoc[i].y);
 					window.draw(pocisk[i]);
@@ -377,17 +521,18 @@ public:
 		}
 	}
 	//obs³uga wystrzelonych przez bota pocisków
-	void trafieniePocisk(sf::Sprite ply,char typ, sf::Sprite* pociski, sf::Sprite* obiektOto, int SizeTab) {//PRZEBUDOWA typ - dla okreœlenia typu
+	void trafieniePocisk(sf::Sprite ply,char typ, sf::Sprite* pociski, sf::Sprite* obiektOto, int SizeTab, int* pancerzP) {//PRZEBUDOWA typ - dla okreœlenia typu
 		for (int j = 0; j < iloscPociskow; j++) {
 			for (int i = 0; i < SizeTab; i++) {
 				if (typ == 'W' && abs(pociski[j].getPosition().x - obiektOto[i].getPosition().x) < 18 && abs(pociski[j].getPosition().y - obiektOto[i].getPosition().y) < 18) {
 					pociski[j].setPosition(-200, -100);//umieszczenie pocisku poza obszarem planszy
-					std::cout << "BOT trafiono obiekt oto " << i << std::endl;
+					//std::cout << "BOT trafiono obiekt oto " << i << std::endl;
 					ruchPoc = 0;
 				}
 				if (typ == 'G' && abs(pociski[j].getPosition().x - ply.getPosition().x) < 20 && abs(pociski[j].getPosition().y - ply.getPosition().y) < 20) {
 					pociski[j].setPosition(-200, -100);
-					std::cout << "PLEYER trafiony przez " << j << std::endl;
+					*pancerzP--;
+					//std::cout << "PLEYER trafiony przez " << j << std::endl;
 					ruchPoc = 0;
 				}
 			}
@@ -397,17 +542,19 @@ public:
 
 	}
 	//trafienie przez pocisk
-	bool trafiPoc(sf::Sprite* pocisk,int id) {//traienie przez pocisk
+	bool trafiPoc(sf::Sprite* pocisk,int id, int*punkty) {//traienie przez pocisk
 		idBot = id;
 		for (int i = 0; i < N; i++) {
 			if (pocisk[0].getGlobalBounds().intersects(enemy[i].getGlobalBounds())) {
-				std::cout << "Trafiony enemy " << id <<"pancerz"<<pancerzEnemy<< std::endl;
+				std::cout << "Trafiony enemy " << id <<"PANCERZ "<<pancerzEnemy<< std::endl;
+				*punkty=*punkty+5;//gdy trafiony +5p
 				//TUTAJ PROCEDURA OBS£UGI TRAFIEÑ BOTÓW
 				pancerzEnemy = pancerzEnemy - 1;//-5 do pancerza
 				if (pancerzEnemy <= 0) {
 					std::cout << "Wrog zestrzelony " << id << std::endl;
 					enmtxt.loadFromFile("teksturaPrzeciwnikKaput.png");
 					enemy[i].setTexture(enmtxt);
+					*punkty = *punkty + 100;//gdy zestrzelony +100p
 					zestrzelony = true;	
 				}
 			}
@@ -759,15 +906,18 @@ int main()
 	int E = 3;//LICZBA WROGOW
 	bool wygrana;
 	bool przegrana;
+	bool pauza;
+	int flagaMenuGry;
 	sf::RenderWindow window(sf::VideoMode(800, 600), "TANK 2021");
 	sf::Vector2u size = window.getSize();
 	unsigned int width = size.x;
 	unsigned int hight = size.y;
-	Interfejs if1;
-	Player p1;
+	Interfejs if1(window);
+	Player p1(0, 30, 100, 1);//punkty, pociski, pancerz, prêdkoœæ
 	Enemy* e1;
 	ObjSrd s1(200);
 	e1 = new Enemy[E];
+	pauza = false;
 	while (window.isOpen())
 	{
 
@@ -776,16 +926,30 @@ int main()
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
-
+			if (event.key.code == sf::Keyboard::F1) {
+				std::cout << "PAUZA\n";
+				pauza = true;
+				flagaMenuGry = 1;
+				Opoznienie(200);
+			}
+			if (event.key.code == sf::Keyboard::Escape) {
+				pauza = true;
+				flagaMenuGry = 2;
+			}
+			/*if(event.key.code == sf::Keyboard::Enter&&pauza==true)
+			{
+				pauza = false;
+			}*/
 		}
+
 		window.clear();
-		p1.ruch(window, p1.brodzenie(s1.ZwrocMapeGry(2), s1.zwrocRozTab(2)));
+		p1.ruch(window, p1.brodzenie(s1.ZwrocMapeGry(2), s1.zwrocRozTab(2)), pauza);
 		s1.draw(window, 2);//WODA
 		p1.zderzenieObj(s1.ZwrocMapeGry(0), s1.zwrocRozTab(0));
 		p1.zderzenieObj(s1.ZwrocMapeGry(1), s1.zwrocRozTab(1));
 
 		for (int k = 0; k < E; k++) {//PÊTLA OBS£UGUJ¥CA PRZECIWNIKÓW
-			if (e1[k].trafiPoc(p1.zwrocPocisk(), k) == false) {//test dla nieruchomego zestrzelonego bota
+			if (e1[k].trafiPoc(p1.zwrocPocisk(), k, p1.zwrocPunkty()) == false&& pauza==false) {//test dla nieruchomego zestrzelonego bota
 				e1[k].ruch_bot(window);
 				e1[k].strzalBot(p1.zwrocSprite(), window, s1.zwrocOrla(1));
 			}
@@ -798,14 +962,13 @@ int main()
 			}
 			s1.trafiPoc(e1[k].zwrocPoc());
 			p1.zderzenieObj(e1[k].zwroctabSprite(), 1);
-			e1[k].trafieniePocisk(e1[k].zwrocSprite(k),'W', e1[k].zwrocPoc(), s1.ZwrocMapeGry(0), s1.zwrocRozTab(0));
-			e1[k].trafieniePocisk(e1[k].zwrocSprite(k),'W', e1[k].zwrocPoc(), s1.ZwrocMapeGry(1), s1.zwrocRozTab(1));
-			e1[k].trafieniePocisk(p1.zwrocSprite(),'G', e1[k].zwrocPoc(), s1.ZwrocMapeGry(1), s1.zwrocRozTab(1));//COŒ TU NIE GRA ALE DZiA£A - MA OBS£UGIWAC ZDERZENIE POCISKU Z PLAYEREM
+			e1[k].trafieniePocisk(e1[k].zwrocSprite(k),'W', e1[k].zwrocPoc(), s1.ZwrocMapeGry(0), s1.zwrocRozTab(0),p1.zwrocPanc());
+			e1[k].trafieniePocisk(e1[k].zwrocSprite(k),'W', e1[k].zwrocPoc(), s1.ZwrocMapeGry(1), s1.zwrocRozTab(1), p1.zwrocPanc());
+			e1[k].trafieniePocisk(p1.zwrocSprite(),'G', e1[k].zwrocPoc(), s1.ZwrocMapeGry(1), s1.zwrocRozTab(1), p1.zwrocPanc());//COŒ TU NIE GRA ALE DZiA£A - MA OBS£UGIWAC ZDERZENIE POCISKU Z PLAYEREM
 			p1.trafieniePocisk(p1.zwrocSprite(), p1.zwrocPPocisk(), e1[k].zwroctabSprite(), 1);
 			przegrana = e1[k].Win(s1.zwrocOrla(1));
 			e1[k].draw(window);
 		}
-
 		p1.trafieniePocisk(p1.zwrocSprite(), p1.zwrocPPocisk(), s1.ZwrocMapeGry(0), s1.zwrocRozTab(0));
 		p1.trafieniePocisk(p1.zwrocSprite(), p1.zwrocPPocisk(), s1.ZwrocMapeGry(1), s1.zwrocRozTab(1));
 		p1.strzal(window);
@@ -814,17 +977,25 @@ int main()
 		s1.trafiPoc(p1.zwrocPocisk());//obs³uga trafienia obiektów otoczenia
 		p1.draw(window);
 		s1.draw(window, 3);//rysowanie zaroœli
-		wygrana = p1.Win(s1.zwrocOrla(0));
-		Opoznienie(1);
-		if (wygrana == true) {
-			std::cout << "WYGRALES GRE\n";
-			//while(1)
-			do
-			if1.draw(window);
-			while (event.key.code == sf::Keyboard::Enter);
+		if1.getStanPly(window,p1.zwrocStanPly(2),p1.zwrocStanPly(3),p1.zwrocStanPly(1));
+		if (pauza == true) {
+			if(flagaMenuGry==1)
+				if1.draw(window, event, 1);
+			if (flagaMenuGry == 2) {
+				if1.draw(window, event, 2);
+				std::cout << "Wybor:" << if1.wybor(event, window) << std::endl;
+			}
 		}
-		else if (przegrana == true)
-			std::cout << "PRZEGRALES GRE\n";
+		wygrana = p1.Win(s1.zwrocOrla(0));
+		//Opoznienie(1);
+		if (wygrana == true) {
+			std::cout << "WYGRANA" << std::endl;
+			//pauza == true;
+			//if1.draw(window, event, 3);
+		}
+		else if (przegrana == true) {
+			//if1.draw(window, event, 4);
+		}
 		window.display();
 	}
 
