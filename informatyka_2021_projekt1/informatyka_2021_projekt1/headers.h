@@ -30,6 +30,8 @@ typedef struct {
 
 }stanGry;
 
+void zapisGry(stanGry graczSave, int id_save, int getTank, float graczPozx, float graczPozy, std::string nick_save, int pkt_save, int pck_save, int pan_save, float spd_save, int ilEne_save);
+void odczytGry(stanGry graczSave, int id_save, int* setTank, float* graczPozx, float* graczPozy, std::string* nick_save, int* pkt_save, int* pck_save, int* pan_save, float* spd_save, int* ilEne_save);
 void Opoznienie(int opoznienie);
 class Interfejs{
 private:
@@ -132,11 +134,11 @@ public:
 	void draw(sf::RenderWindow& window, int);//rysuj menu w oknie
 	void podajNazweGracza(sf::Event, sf::RenderWindow&);
 	void setPoziomMenu(int n);
-	void kontynujGre();
 	void zwrotSetPly(int* Poziom, int* Czolg, std::string* NazwaPly);
 	int przesunMenu(sf::Event event, sf::RenderWindow& window, sf::Text tabWyb[], int rozTab, int kierunek);
 	sf::Text* zwrocTab(int id);
 	void tablicaWynikZapis(int punkty, std::string nazwaGracz);
+	void sortujListe();
 	void tablicaWynikOdczyt(int N);
 	void ladujListeWyn();
 	void drawLista(sf::RenderWindow& window);
@@ -180,14 +182,11 @@ public:
 	sf::Sprite zwrocSprite(int id);
 	sf::Sprite* zwrocPoc();
 	void zderzenieObj(sf::Sprite* mapaGry, int rozmiarTab);
+	bool WinEne(sf::Sprite orzel);
 };	
 
 //Obiekty Otoczena
 class ObjSrd {//elementy otoczenia
-	//sf::Sprite* wall;
-	//sf::Sprite* rock;
-	//sf::Sprite* bush;
-	//sf::Sprite* water;
 	sf::Sprite orzel[2];
 	sf::Sprite** mapaGry;//dynamiczna dwuwymiarowa
 	sf::Texture walltex;

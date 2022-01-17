@@ -18,68 +18,6 @@ Gra bêdzie mia³a kilka poziomów, ró¿ni¹cych siê poziomem trudnoœci rozgrywki.
 #include <vector>
 #include "headers.h"
 
-
-
-
-
-void tablicaWynikow() {
-
-
-}
-void zapisGry(stanGry graczSave,int id_save, int getTank, float graczPozx, float graczPozy, std::string nick_save, int pkt_save, int pck_save, int pan_save, float spd_save, int ilEne_save)
-{
-		graczSave.wybCzolg = getTank;
-		graczSave.xGracz = graczPozx;
-		graczSave.yGracz = graczPozy;
-		graczSave.nick = nick_save;
-		graczSave.punkty = pkt_save;
-		graczSave.pociski = pck_save;
-		graczSave.pancerz = pan_save;
-		graczSave.speed = spd_save;
-		graczSave.iloscEnemy = ilEne_save;
-		FILE* fp;
-		std::cout << "Zapis stanu!\n";
-		fp = fopen("saveGame1.dat", "wb");
-		//if(id_save==1)
-		//fp = fopen("saveGame1.dat", "wb");
-		//if (id_save == 2)
-		//	fp = fopen("saveGame2.dat", "wb");
-		//if (id_save == 3)
-		//	fp = fopen("saveGame3.dat", "wb");
-		fwrite(&graczSave, sizeof(stanGry), 1, fp);
-		fclose(fp);
-	
-}
-		
-
-void odczytGry(stanGry graczSave, int id_save,int* setTank, float* graczPozx, float* graczPozy,std::string* nick_save, int* pkt_save, int* pck_save, int* pan_save, float* spd_save, int* ilEne_save)
-{
-	FILE* fp;
-	std::cout << "Odczyt!\n";
-	//read_flag = 1;
-	fp = fopen("saveGame1.dat", "rb");
-	/*if (id_save == 1)
-		fp = fopen("saveGame1.dat", "rb");
-	if (id_save == 2)
-		fp = fopen("saveGame2.dat", "rb");
-	if (id_save == 3)
-		fp = fopen("saveGame3.dat", "rb");*/
-	fread(&graczSave, sizeof(stanGry), 1, fp);
-	fclose(fp); 
-
-	//->setPosition(graczSave.xGracz, graczSave.yGracz);
-	//*gracz =sf::Vector2f(graczSave.xGracz, graczSave.yGracz);
-	*graczPozx = graczSave.xGracz;
-	*graczPozx = graczSave.yGracz;
-	*nick_save = graczSave.nick;
-	*pkt_save = graczSave.punkty;
-	*pck_save = graczSave.pociski;
-	*pan_save = graczSave.pancerz;
-	*spd_save = graczSave.speed;
-	*ilEne_save = graczSave.iloscEnemy;
-
-}
-
 int main()
 {
 
@@ -95,14 +33,13 @@ int main()
 	sf::Text nazwaGracza;
 	std::string nazwaPly;
 	Menu menu(window.getSize().x, window.getSize().y);
-	//DO zApisu
-	int iloscSave=3;
+	//DO ZAPISÓW
+	int iloscSave=3;//iloœæ mo¿liwych save'ów - NIEWYKORZYSTANO
 	stanGry *gracz_save = new stanGry[iloscSave];
 	//ZMIENNE ROZGRYWKI
 	int E = 3;//LICZBA WROGOW
-	bool wygrana;
+	bool wygrana=false;
 	bool przegrana=false;
-
 	bool pauza;
 	int flagaMenuGry;
 	unsigned int width = size.x;
@@ -118,15 +55,14 @@ int main()
 	while (window.isOpen()&& startGry == false)
 	{
 		sf::Event event;
-		//Pêtla menu
+/////////////////////////////////////////////////PÊTLA MENU////////////////////////////////////////////////////////////////////
 			window.clear();
 			if (menu_selected_flag == 0) {
 				menu_selected_flag = menu.przesunMenu(event, window, menu.zwrocTab(1), MAX_LICZBA_POZIOMOW, 1);
 				menu.draw(window, 0);
 			}
-			//std::cout << "menu select flag" << menu_selected_flag <<std::endl;
 			else if (menu_selected_flag == 1) {
-				std::cout << "menu select flag " << menu_selected_flag << std::endl;
+				//MENU WYBORU USTAWIEÑ GRY
 				menu1_select = menu.przesunMenu(event, window, menu.zwrocTab(2), LICZBA_WYB_ATR, 1);
 				menu.podajNazweGracza(event, window);
 				menu.draw(window, 1);
@@ -172,8 +108,10 @@ int main()
 			//akcja dla kontynuuacji gry
 			else if (menu_selected_flag == 3) {
 				std::cout << "tablica wynikow" << std::endl;
-				menu.tablicaWynikOdczyt(3);
-				//menu.ladujListeWyn();
+				menu.tablicaWynikOdczyt(10);
+				menu.sortujListe();
+				menu.ladujListeWyn();
+				menu.drawLista(window);
 				menu.draw(window, 3);
 			}
 			//akcja dla tablicy wyników
@@ -218,13 +156,13 @@ int main()
 		std::cout << "x: " << x << "y: " <<y<< std::endl;
 		p1 = p2;
 		e1 = new Enemy[E];
-		p1.setTxtCzolg(wybranyCzolg);
-		//p1.setPoz(x, y);
+		p1.setTxtCzolg(wybranyCzolg);//ustawienie textury z Save
+		p1.setPoz(x, y);//ustawienie pozycji z Save
 
 	}
-	
 	pauza = false;
-		/////////////////////////////////////////////////PÊTLA GRY////////////////////////////////////////////////////////////////////
+	bool flaga_wygranej = false;
+/////////////////////////////////////////////////PÊTLA GRY////////////////////////////////////////////////////////////////////
 	while (window.isOpen()&& startGry == true)
 	{
 		sf::Event event;
@@ -245,11 +183,11 @@ int main()
 					pauza = true;
 					flagaMenuGry = 2;
 				}
-				if(event.key.code == sf::Keyboard::Enter&& flagaMenuGry ==1)
+				if(event.key.code == sf::Keyboard::Enter&& flagaMenuGry ==1)//HELP
 				{
 					pauza = false;
 				}
-				if (event.key.code == sf::Keyboard::Enter && flagaMenuGry == 2)
+				if (event.key.code == sf::Keyboard::Enter && flagaMenuGry == 2)//MENU GRY
 				{
 					if(if1.zwrotWybor() ==1)
 						pauza = false;
@@ -269,7 +207,7 @@ int main()
 			p1.zderzenieObj(s1.ZwrocMapeGry(1), s1.zwrocRozTab(1));
 
 			for (int k = 0; k < E; k++) {//PÊTLA OBS£UGUJ¥CA PRZECIWNIKÓW
-				if (e1[k].trafiPoc(p1.zwrocPocisk(), k, p1.zwrocPunkty()) == false && pauza == false) {//test dla nieruchomego zestrzelonego bota
+				if (e1[k].trafiPoc(p1.zwrocPocisk(), k, p1.zwrocPunkty()) == false && pauza == false&& przegrana == false &&wygrana == false) {//test dla nieruchomego zestrzelonego bota
 					e1[k].ruch_bot(window);
 					e1[k].strzalBot(p1.zwrocSprite(), window, s1.zwrocOrla(1));
 				}
@@ -286,7 +224,7 @@ int main()
 				e1[k].trafieniePocisk(e1[k].zwrocSprite(k), 'W', e1[k].zwrocPoc(), s1.ZwrocMapeGry(1), s1.zwrocRozTab(1), p1.zwrocPanc());
 				e1[k].trafieniePocisk(p1.zwrocSprite(), 'G', e1[k].zwrocPoc(), s1.ZwrocMapeGry(1), s1.zwrocRozTab(1), p1.zwrocPanc());//COŒ TU NIE GRA ALE DZiA£A - MA OBS£UGIWAC ZDERZENIE POCISKU Z PLAYEREM
 				p1.trafieniePocisk(p1.zwrocSprite(), p1.zwrocPPocisk(), e1[k].zwroctabSprite(), 1);
-				//przegrana = e1[k].Win(s1.zwrocOrla(1));
+				przegrana = e1[k].WinEne(s1.zwrocOrla(1));
 				e1[k].draw(window);
 			}
 			p1.trafieniePocisk(p1.zwrocSprite(), p1.zwrocPPocisk(), s1.ZwrocMapeGry(0), s1.zwrocRozTab(0));
@@ -303,21 +241,24 @@ int main()
 					if1.draw(window, event, 1);
 				if (flagaMenuGry == 2) {
 					if1.draw(window, event, 2);
-					std::cout << "Wybor:" << if1.wybor(event, window) << std::endl;
+					if1.wybor(event, window);
 				}
 			}
 			wygrana = p1.Win(s1.zwrocOrla(0));
 
 			if (wygrana == true) {
-				std::cout << "WYGRANA" << std::endl;
+				//std::cout << "WYGRANA" << std::endl;
 				pauza == true;
-				menu.tablicaWynikZapis(p1.zwrocStanPly(2),nazwaPly);
-
-
-				//if1.draw(window, event, 3);
+					if (flaga_wygranej == false) {
+						menu.tablicaWynikZapis(p1.zwrocStanPly(2),nazwaPly);
+						flaga_wygranej = true;
+					}
+				if1.draw(window, event, 3);
 			}
-			else if (przegrana == true) {
-				//if1.draw(window, event, 4);
+			else if (przegrana == true||p1.zwrocStanPly(1)<0) {
+				pauza == true;
+				//std::cout << "PRZEGRANA" << std::endl;
+				if1.draw(window, event, 4);
 			}
 			
 		}

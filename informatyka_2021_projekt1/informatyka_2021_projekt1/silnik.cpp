@@ -8,7 +8,55 @@
 
 float pi = 3.14159;
 
+//ZAPIS STANU GRY
+void zapisGry(stanGry graczSave, int id_save, int getTank, float graczPozx, float graczPozy, std::string nick_save, int pkt_save, int pck_save, int pan_save, float spd_save, int ilEne_save)
+{
+	graczSave.wybCzolg = getTank;
+	graczSave.xGracz = graczPozx;
+	graczSave.yGracz = graczPozy;
+	graczSave.nick = nick_save;
+	graczSave.punkty = pkt_save;
+	graczSave.pociski = pck_save;
+	graczSave.pancerz = pan_save;
+	graczSave.speed = spd_save;
+	graczSave.iloscEnemy = ilEne_save;
+	FILE* fp;
+	std::cout << "Zapis stanu!\n";
+	fp = fopen("saveGame1.dat", "wb");
+	if (id_save == 2)
+		fp = fopen("saveGame2.dat", "wb");
+	if (id_save == 3)
+		fp = fopen("saveGame3.dat", "wb");
+	fwrite(&graczSave, sizeof(stanGry), 1, fp);
+	fclose(fp);
 
+}
+//ODCZYT STANU GRY
+void odczytGry(stanGry graczSave, int id_save, int* setTank, float* graczPozx, float* graczPozy, std::string* nick_save, int* pkt_save, int* pck_save, int* pan_save, float* spd_save, int* ilEne_save)
+{
+	FILE* fp;
+	std::cout << "Odczyt!\n";
+	fp = fopen("saveGame1.dat", "rb");
+	if (id_save == 2)
+		fp = fopen("saveGame2.dat", "rb");
+	if (id_save == 3)
+		fp = fopen("saveGame3.dat", "rb");
+	fread(&graczSave, sizeof(stanGry), 1, fp);
+	fclose(fp);
+
+	*graczPozx = graczSave.xGracz;
+	*graczPozx = graczSave.yGracz;
+	*nick_save = graczSave.nick;
+	*pkt_save = graczSave.punkty;
+	*pck_save = graczSave.pociski;
+	*pan_save = graczSave.pancerz;
+	*spd_save = graczSave.speed;
+	*ilEne_save = graczSave.iloscEnemy;
+	*setTank = graczSave.wybCzolg;
+
+}
+
+//GENERATOR OPUZNIEN
 void Opoznienie(int opoznienie)//o dan¹ liczbê sekund
 {
 	sf::Clock zegar;
@@ -22,6 +70,20 @@ void Opoznienie(int opoznienie)//o dan¹ liczbê sekund
 			break;
 		}
 
+	}
+}
+//PORÓWNANIE DLA FUNKCI QSORT
+int porownaj(const void* left, const void* right) {
+	const wynikiGry* a = (const wynikiGry*)left;
+	const wynikiGry* b = (const wynikiGry*)right;
+	if (a->punkty > b->punkty) {
+		return -1;
+	}
+	else if (a->punkty < b->punkty) {
+		return 1;
+	}
+	else {
+		return 0;
 	}
 }
 
@@ -151,10 +213,6 @@ Menu::Menu(float width, float height)
 	menu1[3].setString("<ROZPOCZNIJ GRE>");
 	menu1[3].setPosition(sf::Vector2f(50, 500));
 
-	//MENU KONTYNUJ Gre
-
-
-
 }
 //rysowanie menu w biezacym oknie
 void Menu::draw(sf::RenderWindow& window, int poziomMenu)
@@ -195,9 +253,7 @@ void Menu::draw(sf::RenderWindow& window, int poziomMenu)
 		}
 	}
 }
-void Menu::kontynujGre() {
-
-}
+//ZAPIS TABLICY WYNIKÓW
 void Menu::tablicaWynikZapis(int punkty, std::string nazwaGracz ) {
 	wynikiGry listaGraczy;
 	listaGraczy.punkty = punkty;
@@ -208,6 +264,12 @@ void Menu::tablicaWynikZapis(int punkty, std::string nazwaGracz ) {
 	std::cout << "Zapis do listy graczy" << std::endl;
 	fclose(fp);
 }
+//SORTOWANIE WYNIKÓW
+void Menu::sortujListe()
+{
+	qsort(player_char, Np, sizeof(wynikiGry), porownaj);
+}
+//ODCZYT Z PLIKU WYNIKÓW
 void Menu::tablicaWynikOdczyt(int N) {
 	//stanGry listaGraczyOdczyt[10];
 	FILE* fp = fopen("gracze.dat", "r+b");
@@ -215,16 +277,10 @@ void Menu::tablicaWynikOdczyt(int N) {
 	fseek(fp, 0, SEEK_END);//na ostatni bajt
 	rozmiar_plik = ftell(fp);//czytaj indeks ostatniego bajtu
 	ile_graczy = rozmiar_plik / sizeof(wynikiGry);
-	//if (N > ile_graczy)
-	//{
-	//	Np = 5;//moze byc cokolwiek by zabezpieczalo przed odczytem danych ktorych nie ma
-	//}
-	//else
-	//{
-	//	Np = N;
-	//}
 	Np = ile_graczy;
-	std::cout <<"liczbaSaveow: " << ile_graczy << std::_Unlock_shared_ptr_spin_lock;
+	if (ile_graczy > N)
+		Np = N;
+	//std::cout <<"liczbaSaveow: " << ile_graczy<< std::endl;
 
 	players = new sf::Text[Np];
 	player_char = new wynikiGry[Np];
@@ -232,16 +288,9 @@ void Menu::tablicaWynikOdczyt(int N) {
 	rewind(fp);//czytaj od poczatku
 	fread(player_char, sizeof(wynikiGry), Np, fp);
 	fclose(fp);
-	for (int i = 0; i < Np; i++)
-	{
-		players[i].setFont(font);
-		players[i].setCharacterSize(30);
-		players[i].setFillColor(sf::Color::Red);
-		players[i].setPosition(10 + 800 / 4, 20 + i * 50);
-
-	}
 
 }
+//PRYGOTOWNIE TABLICY WYNIKOW
 void Menu::ladujListeWyn()
 {
 	std::string tmp_tekst;
@@ -249,11 +298,13 @@ void Menu::ladujListeWyn()
 	{
 		players[i].setFont(font);
 		players[i].setCharacterSize(30);
-		players[i].setFillColor(sf::Color::Red);
-		players[i].setPosition(10 + 800 / 4, 20 + i * 50);
+		players[i].setFillColor(sf::Color::Green);
+		players[i].setPosition(100, 100 + i * 50);
 
-		tmp_tekst=player_char[i].nick;
-		tmp_tekst += " Punkty: " + std::to_string(player_char[i].punkty);
+		tmp_tekst = std::to_string(i+1);
+		tmp_tekst += ". Nick: ";
+		tmp_tekst += player_char[i].nick;
+		tmp_tekst += "  Punkty: " + std::to_string(player_char[i].punkty);
 		players[i].setString(tmp_tekst);
 	}
 }
@@ -278,15 +329,15 @@ void Menu::podajNazweGracza(sf::Event event, sf::RenderWindow& window) {
 		nazwaGracza.setFont(font);
 		nazwaGracza.setFillColor(sf::Color::Green);
 		nazwaGracza.setPosition(sf::Vector2f(300, 100));
-		//window.draw(nazwaGracza);
-		Opoznienie(100);
+		window.draw(nazwaGracza);
+		Opoznienie(150);
 	}
 }
+//ZWROT WYBORU DLA MENU G£ÓWNEGO
 int Menu::getSelectedItem(int i) {
 	if (i == 0)
 		return selectedItem;
 	if (i == 1)
-		//return selectedItem2;
 		return itm + 1;
 	if (i == 2)
 		return selectedItem2;
@@ -299,10 +350,7 @@ void Menu::setPoziomMenu(int n) {
 int Menu::przesunMenu(sf::Event event, sf::RenderWindow& window, sf::Text tabWyb[], int rozTab, int kierunek) {
 	while (window.pollEvent(event)) {//kierunek = 1 -> gora/dol
 		if (event.type == sf::Event::KeyPressed) {
-			//std::cout << "Select tank: " << itm + 1 << std::endl;
-			//Opoznienie(100);
 			if (event.key.code == sf::Keyboard::Down) {
-				//std::cout << "PRZESUNIECIE MENU:" << kierunek <<"wybrana: "<< itm<< std::endl;
 				if (itm >= 0 && itm < rozTab)
 					tabWyb[itm].setFillColor(sf::Color::White);
 				tabWyb[itm].setStyle(sf::Text::Regular);
@@ -345,7 +393,6 @@ int Menu::przesunMenu(sf::Event event, sf::RenderWindow& window, sf::Text tabWyb
 			}
 			else if (itm == 2) {
 				if (event.key.code == sf::Keyboard::Left) {
-					//wyborPoz[LICZBA_POZ]
 					wyborPoz[selectPoziom].setFillColor(sf::Color::White);
 					wyborPoz[selectPoziom].setStyle(sf::Text::Regular);
 					--selectPoziom;
@@ -390,10 +437,6 @@ sf::Text* Menu::zwrocTab(int id) {
 
 
 
-
-
-//GRA
-
 	Interfejs::Interfejs(sf::RenderWindow& window) {
 		//laduj czcionke
 
@@ -402,18 +445,20 @@ sf::Text* Menu::zwrocTab(int id) {
 			return;
 		}
 		koniecGryW.setFont(font);
-		koniecGryW.setString("ZWYCIENSTWO");
+		koniecGryW.setString("-WYGRANA-");
 		koniecGryW.setOutlineThickness(2);
 		koniecGryW.setOutlineColor(sf::Color::Red);
 		koniecGryW.setFillColor(sf::Color::White);
-		koniecGryW.setPosition(sf::Vector2f(window.getSize().x-100, window.getSize().y-30));
-		koniecGryW.setCharacterSize(60);
+		koniecGryW.setPosition(sf::Vector2f(window.getSize().x / 2-150, window.getSize().y / 2-30));
+		koniecGryW.setCharacterSize(80);
 
 		koniecGryP.setFont(font);
 		koniecGryP.setString("KONIEC GRY");
+		koniecGryW.setOutlineThickness(2);
+		koniecGryW.setOutlineColor(sf::Color::Red);
 		koniecGryP.setFillColor(sf::Color::White);
-		koniecGryP.setPosition(sf::Vector2f(window.getSize().x - 100, window.getSize().y - 30));
-		koniecGryP.setCharacterSize(60);
+		koniecGryP.setPosition(sf::Vector2f(window.getSize().x / 2 - 150, window.getSize().y / 2 - 30));
+		koniecGryP.setCharacterSize(80);
 
 
 		//Wyœwietlenie menu rozgrywki
@@ -465,6 +510,7 @@ sf::Text* Menu::zwrocTab(int id) {
 		parametrGracz[2].setPosition(window.getSize().x-100, 5);
 
 	}
+	//RYSOWANIE INTERFEJSU
 	void Interfejs::draw(sf::RenderWindow& window, sf::Event& event, int opcja){
 
 			//window.draw(menuAkcji);
@@ -485,6 +531,7 @@ sf::Text* Menu::zwrocTab(int id) {
 				window.draw(koniecGryP);
 			}
 	}
+	//WYBÓR W MENU PODCZAS GRY
 	int Interfejs::wybor(sf::Event event, sf::RenderWindow& window) {
 		while (window.pollEvent(event)) {
 			if (event.key.code == sf::Keyboard::Down) {
@@ -513,10 +560,11 @@ sf::Text* Menu::zwrocTab(int id) {
 			}
 		}
 	}
+	//ZWRACA WYBRANY ELEMENT
 	int Interfejs::zwrotWybor() {
 		return (itm + 1);
 	}
-
+	//PONIERA I WYŒWIETLA PARAMETRY ROZGRYWKI
 	void Interfejs::getStanPly(sf::RenderWindow& window, int punkty, int pociski, int pancerz) {
 		std::string punktyStr;
 		std::string pociskiStr;
@@ -671,13 +719,9 @@ sf::Text* Menu::zwrocTab(int id) {
 
 	bool Player::Win(sf::Sprite orzel) {
 		//METODA DLA WYGRANEJ
-		//for (int i = 0; i < iloscPociskow; i++)
-			if (pocisk[0].getGlobalBounds().intersects(orzel.getGlobalBounds()) && flaga_wygranej == false) {
+			if (pocisk[0].getGlobalBounds().intersects(orzel.getGlobalBounds())) {
 				wygrana = true;
-				flaga_wygranej = true;
 			}
-			else
-				wygrana = false;
 		return wygrana;
 	}
 	int Player::zwrocStanPly(int id) {
@@ -689,7 +733,6 @@ sf::Text* Menu::zwrocTab(int id) {
 			return pociski;
 	}
 	void Player::setTxtCzolg(int setCzolg) {
-		plrtxt.loadFromFile("teksturaPlayer1.png");
 		if (setCzolg == 1)
 			plrtxt.loadFromFile("teksturaPlayer1.png");
 		if (setCzolg == 2)
@@ -815,7 +858,6 @@ sf::Text* Menu::zwrocTab(int id) {
 					kierPoc[j].y = sin((enemy[i].getRotation() - 90) * pi / 180);
 					flagaStrzal = false;
 					ruchPoc = 1;
-					//return pocisk[i];
 				}
 
 			}
@@ -858,9 +900,8 @@ sf::Text* Menu::zwrocTab(int id) {
 				//std::cout << "Trafiony enemy " << id << "PANCERZ " << pancerzEnemy << std::endl;
 				*punkty = *punkty + 5;//gdy trafiony +5p
 				//TUTAJ PROCEDURA OBS£UGI TRAFIEÑ BOTÓW
-				pancerzEnemy = pancerzEnemy - 1;//-5 do pancerza
+				pancerzEnemy = pancerzEnemy - 1;//-1 do pancerza
 				if (pancerzEnemy <= 0) {
-					//std::cout << "Wrog zestrzelony " << id << std::endl;
 					enmtxt.loadFromFile("teksturaPrzeciwnikKaput.png");
 					enemy[i].setTexture(enmtxt);
 					*punkty = *punkty + 100;//gdy zestrzelony +100p
@@ -896,6 +937,13 @@ sf::Text* Menu::zwrocTab(int id) {
 				}
 			}
 		}
+	}
+	bool Enemy::WinEne(sf::Sprite orzel) {
+		bool wygrana;
+		if (pocisk[0].getGlobalBounds().intersects(orzel.getGlobalBounds())) {
+			wygrana = true;
+		}
+		return wygrana;
 	}
 	void Enemy::draw(sf::RenderWindow& window) {
 		for (int i = 0; i < N; i++) {
@@ -967,12 +1015,10 @@ sf::Text* Menu::zwrocTab(int id) {
 				R++;
 			if (mapa[l][2] == 4)
 				S++;
-			//if (feof(fp) != 0)//jezeli koniec pliku to break
-			//	break;
 
 		}
 		std::fclose(fp);
-		std::cout << O << "," << P << "," << R << "," << S << std::endl;
+		std::cout << O << "," << P << "," << R << "," << S << std::endl;//drukowanie elementów danego typu
 		walltex.loadFromFile("cegla.png");
 		rocktex.loadFromFile("rock.png");
 		bushtex.loadFromFile("bush.png");
@@ -1043,7 +1089,6 @@ sf::Text* Menu::zwrocTab(int id) {
 
 		}
 		std::fclose(fp);
-		//std::cout << o << "," << p << "," << r << "," << s << std::endl;
 
 	}
 	sf::Vector2f ObjSrd::kierKol(sf::Sprite plr_poz) {//iteracja po wszystkich utworzonych obiektach ototczenia , w poszukwaniu kolizji
