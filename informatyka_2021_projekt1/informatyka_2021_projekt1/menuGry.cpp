@@ -12,7 +12,7 @@
 //#define LICZBA_WYB_ATR 4
 //#define LICZBA_CZOLGOW 3
 //
-//void myDelay(int opoznienie)
+//void Opoznienie(int opoznienie)
 //{
 //	sf::Clock zegar;
 //	sf::Time czas;
@@ -44,6 +44,7 @@
 //	int selectedItem2 = 0;
 //	int selectCzolg = 0;
 //	int selectPoziom = 0;
+//	int itm = 0;
 //	sf::Sprite Tank[LICZBA_CZOLGOW];
 //	sf::Texture Tank1txt;
 //	sf::Texture Tank2txt;
@@ -60,10 +61,12 @@
 //	int getSelectedItem(int);//zwroc poziom menu
 //	void draw(sf::RenderWindow& window, int);//rysuj menu w oknie
 //	void podajNazweGracza(sf::Event, sf::RenderWindow&);
-//	void wybierzLP(char);
+//	//void wybierzLP(char);
 //	void setPoziomMenu(int n);
 //	void kontynujGre();
-//	void zwrotSetPly(int&, int&, sf::Text&);
+//	void zwrotSetPly(int* Poziom, int* Czolg, std::string* NazwaPly);
+//	int przesunMenu(sf::Event event, sf::RenderWindow& window, sf::Text tabWyb[], int rozTab, int kierunek);
+//	sf::Text* zwrocTab(int id);
 //
 //};
 //
@@ -197,7 +200,6 @@
 //
 //
 //}
-//
 ////rysowanie menu w biezacym oknie
 //void Menu::draw(sf::RenderWindow& window, int poziomMenu)
 //{
@@ -211,6 +213,7 @@
 //	}
 //	else if (poziomMenu == 1) {
 //		window.draw(header[1]);
+//		window.draw(nazwaGracza);
 //		for (int i = 0; i < LICZBA_CZOLGOW; i++) {
 //			window.draw(Tank[i]);
 //			if (selectCzolg == 0)
@@ -235,289 +238,161 @@
 //void Menu::kontynujGre() {
 //
 //}
-//void Menu::zwrotSetPly(int& Poziom, int& Czolg, sf::Text& NazwaPly) {
-//	Poziom = selectPoziom;
-//	Czolg = selectCzolg;
-//	NazwaPly = nazwaGracza;
 //
-//}
 //void Menu::podajNazweGracza(sf::Event event, sf::RenderWindow& window) {
 //	sf::Text nazwaGraczaTemp;
-//	bool flaga = false;
-//	if (event.type == sf::Event::TextEntered && selectedItem2 == 0)
-//		if (std::isprint(static_cast <wchar_t>(event.text.unicode), std::locale())) {
-//			nazwaGraczaTemp.setString(nazwaGracza.getString());
-//			nazwaGracza.setString(nazwaGracza.getString() + event.text.unicode);
-//			flaga = true;
-//		}
-//	nazwaGracza.setFont(font);
-//	nazwaGracza.setFillColor(sf::Color::Green);
-//	nazwaGracza.setPosition(sf::Vector2f(300, 100));
-//	window.draw(nazwaGracza);
-//	myDelay(100);
-//
-//}
-////wybieranie czo³gu
-//void Menu::wybierzLP(char kierunek) {
-//	if (selectedItem2 == 1) {
-//		if (kierunek == 'L') {
-//			Tank[selectCzolg].setColor(sf::Color(255, 255, 255, 128));
-//			Tank[selectCzolg].setScale(2, 2);
-//			--selectCzolg;
-//			if (selectCzolg < 0)
-//				selectCzolg = LICZBA_CZOLGOW - 1;
-//			Tank[selectCzolg].setColor(sf::Color(255, 255, 255, 255));
-//			Tank[selectCzolg].setScale(2.5, 2.5);
-//
-//		}
-//		else if (kierunek == 'P') {
-//			Tank[selectCzolg].setColor(sf::Color(255, 255, 255, 128));
-//			Tank[selectCzolg].setScale(2, 2);
-//			++selectCzolg;
-//			if (selectCzolg >= LICZBA_CZOLGOW)
-//				selectCzolg = 0;
-//			Tank[selectCzolg].setColor(sf::Color(255, 255, 255, 255));
-//			Tank[selectCzolg].setScale(2.5, 2.5);
-//		}
+//	if (itm == 0) {
+//		bool flaga = false;
+//		//std::cout << "PODAJ NAZWE" << std::endl;
+//		if (event.type == sf::Event::TextEntered && selectedItem2 == 0)
+//			if (std::isprint(static_cast <wchar_t>(event.text.unicode), std::locale())) {
+//				nazwaGraczaTemp.setString(nazwaGracza.getString());
+//				nazwaGracza.setString(nazwaGracza.getString() + event.text.unicode);
+//				flaga = true;
+//			}
+//		nazwaGracza.setFont(font);
+//		nazwaGracza.setFillColor(sf::Color::Green);
+//		nazwaGracza.setPosition(sf::Vector2f(300, 100));
+//		//window.draw(nazwaGracza);
+//		Opoznienie(100);
 //	}
-//	if (selectedItem2 == 2) {
-//		if (kierunek == 'L') {
-//			//wyborPoz[LICZBA_POZ]
-//			wyborPoz[selectPoziom].setFillColor(sf::Color::White);
-//			wyborPoz[selectPoziom].setStyle(sf::Text::Regular);
-//			--selectPoziom;
-//			if (selectPoziom < 0)
-//				selectPoziom = LICZBA_POZ - 1;
-//			wyborPoz[selectPoziom].setFillColor(sf::Color::Green);
-//			wyborPoz[selectPoziom].setStyle(sf::Text::Bold);
-//
-//		}
-//		else if (kierunek == 'P') {
-//			wyborPoz[selectPoziom].setFillColor(sf::Color::White);
-//			wyborPoz[selectPoziom].setStyle(sf::Text::Regular);
-//			++selectPoziom;
-//			if (selectPoziom >= LICZBA_POZ)
-//				selectPoziom = 0;
-//			wyborPoz[selectPoziom].setFillColor(sf::Color::Green);
-//			wyborPoz[selectPoziom].setStyle(sf::Text::Bold);
-//		}
-//	}
-//
-//
 //}
 //int Menu::getSelectedItem(int i) {
 //	if (i == 0)
 //		return selectedItem;
 //	if (i == 1)
+//		//return selectedItem2;
+//		return itm+1;
+//	if (i == 2)
 //		return selectedItem2;
-//
-//}
-//void Menu::przesunGora() {
-//	if (selectedItem2 >= 0 && selectedItem2 < LICZBA_WYB_ATR)
-//	{
-//		std::cout << "UP" << std::endl;
-//		menu1[selectedItem2].setFillColor(sf::Color::White);
-//		menu1[selectedItem2].setStyle(sf::Text::Regular);
-//		selectedItem2--;
-//		if (selectedItem2 < 0)
-//			selectedItem2 = LICZBA_WYB_ATR - 1;
-//		menu1[selectedItem2].setFillColor(sf::Color::Red);
-//		menu1[selectedItem2].setStyle(sf::Text::Bold);
-//	}
-//}
-//void Menu::przesunDol() {
-//	if (selectedItem2 >= 0 && selectedItem2 < LICZBA_WYB_ATR)
-//	{
-//		std::cout << "DOWN" << std::endl;
-//		menu1[selectedItem2].setFillColor(sf::Color::White);
-//		menu1[selectedItem2].setStyle(sf::Text::Regular);
-//		selectedItem2++;
-//		if (selectedItem2 >= LICZBA_WYB_ATR)
-//			selectedItem2 = 0;
-//		menu1[selectedItem2].setFillColor(sf::Color::Red);
-//		menu1[selectedItem2].setStyle(sf::Text::Bold);
-//	}
-//
-//}
-//void Menu::przesunG()
-//{
-//	if (selectedItem >= 0 && selectedItem < MAX_LICZBA_POZIOMOW)
-//	{
-//		menu[selectedItem].setFillColor(sf::Color::White);
-//		menu[selectedItem].setStyle(sf::Text::Regular);
-//		selectedItem--;
-//		if (selectedItem < 0)
-//			selectedItem = MAX_LICZBA_POZIOMOW - 1;
-//		menu[selectedItem].setFillColor(sf::Color::Red);
-//		menu[selectedItem].setStyle(sf::Text::Bold);
-//	}
-//
-//
-//}
-//void Menu::przesunD()
-//{
-//	if (selectedItem >= 0 && selectedItem < MAX_LICZBA_POZIOMOW)
-//	{
-//		menu[selectedItem].setFillColor(sf::Color::White);
-//		menu[selectedItem].setStyle(sf::Text::Regular);
-//		selectedItem++;
-//		if (selectedItem >= MAX_LICZBA_POZIOMOW)
-//			selectedItem = 0;
-//		menu[selectedItem].setFillColor(sf::Color::Red);
-//		menu[selectedItem].setStyle(sf::Text::Bold);
-//	}
 //
 //}
 //void Menu::setPoziomMenu(int n) {
 //	poziomMenu = n;
 //}
 //
-//void Opoznienie(int opoznienie)
-//{
-//	sf::Clock zegar;
-//	sf::Time czas;
-//	while (1)
-//	{
-//		czas = zegar.getElapsedTime();
-//		if (czas.asMilliseconds() > opoznienie)
-//		{
-//			zegar.restart();
-//			break;
-//		}
+//int Menu::przesunMenu(sf::Event event,sf::RenderWindow& window, sf::Text tabWyb[], int rozTab, int kierunek) {
+//	while (window.pollEvent(event)) {//kierunek = 1 -> gora/dol
+//		if (event.type == sf::Event::KeyPressed) {
+//			//Opoznienie(100);
+//			if (event.key.code == sf::Keyboard::Down) {
+//				//std::cout << "PRZESUNIECIE MENU:" << kierunek <<"wybrana: "<< itm<< std::endl;
+//				if (itm >= 0 && itm < rozTab)
+//					tabWyb[itm].setFillColor(sf::Color::White);
+//				tabWyb[itm].setStyle(sf::Text::Regular);
+//				itm++;
+//				if (itm >= rozTab)
+//					itm = 0;
+//				tabWyb[itm].setFillColor(sf::Color::Red);
+//				tabWyb[itm].setStyle(sf::Text::Bold);
+//			}
+//			else if (event.key.code == sf::Keyboard::Up) {
+//				if (itm >= 0 && itm < rozTab)
+//					tabWyb[itm].setFillColor(sf::Color::White);
+//				tabWyb[itm].setStyle(sf::Text::Regular);
+//				itm--;
+//				if (itm < 0)
+//					itm = rozTab - 1;
+//				tabWyb[itm].setFillColor(sf::Color::Red);
+//				tabWyb[itm].setStyle(sf::Text::Bold);
+//			}
+//			else if (itm == 1) {
+//			 if (event.key.code == sf::Keyboard::Left) {
+//				Tank[selectCzolg].setColor(sf::Color(255, 255, 255, 128));
+//				Tank[selectCzolg].setScale(2, 2);
+//				--selectCzolg;
+//				if (selectCzolg < 0)
+//					selectCzolg = LICZBA_CZOLGOW - 1;
+//				Tank[selectCzolg].setColor(sf::Color(255, 255, 255, 255));
+//				Tank[selectCzolg].setScale(2.5, 2.5);
 //
+//			}
+//			else if (event.key.code == sf::Keyboard::Right) {
+//				Tank[selectCzolg].setColor(sf::Color(255, 255, 255, 128));
+//				Tank[selectCzolg].setScale(2, 2);
+//				++selectCzolg;
+//				if (selectCzolg >= LICZBA_CZOLGOW)
+//					selectCzolg = 0;
+//				Tank[selectCzolg].setColor(sf::Color(255, 255, 255, 255));
+//				Tank[selectCzolg].setScale(2.5, 2.5);
+//			}
+//			}
+//			else if (itm == 2) {
+//				if (event.key.code == sf::Keyboard::Left) {
+//					//wyborPoz[LICZBA_POZ]
+//					wyborPoz[selectPoziom].setFillColor(sf::Color::White);
+//					wyborPoz[selectPoziom].setStyle(sf::Text::Regular);
+//					--selectPoziom;
+//					if (selectPoziom < 0)
+//						selectPoziom = LICZBA_POZ - 1;
+//					wyborPoz[selectPoziom].setFillColor(sf::Color::Green);
+//					wyborPoz[selectPoziom].setStyle(sf::Text::Bold);
+//
+//				}
+//				else if (event.key.code == sf::Keyboard::Right) {
+//					wyborPoz[selectPoziom].setFillColor(sf::Color::White);
+//					wyborPoz[selectPoziom].setStyle(sf::Text::Regular);
+//					++selectPoziom;
+//					if (selectPoziom >= LICZBA_POZ)
+//						selectPoziom = 0;
+//					wyborPoz[selectPoziom].setFillColor(sf::Color::Green);
+//					wyborPoz[selectPoziom].setStyle(sf::Text::Bold);
+//				}
+//			}
+//			else if (event.key.code == sf::Keyboard::Enter) {//zwrocenie wybranego elementu poprzez Enter
+//				std::cout << "Select tank: " << selectCzolg << "Select poziom: " << selectPoziom << std::endl;
+//				return (itm + 1);
+//			}
+//		}
 //	}
 //}
+//void Menu::zwrotSetPly(int* Poziom, int* Czolg, std::string* NazwaPly) {
+//	*Poziom = selectPoziom+1;
+//	*Czolg = selectCzolg+1;
+//	*NazwaPly = std::string(nazwaGracza.getString());
 //
+//}
+//sf::Text* Menu::zwrocTab(int id) {
+//	if (id == 1)
+//		return menu;
+//	if(id == 2)
+//		return menu1;
+//	if (id == 3)
+//		return opisTank;
+//
+//}
 //
 //int main()
 //{
 //	int menu_selected_flag = 0;
 //	int menu1_select = 0;
-//	int pozimGry;
-//	int wybranyCzolg;
+//	int poziomGry=0;
+//	int wybranyCzolg=0;
+//	bool startGry=false;
 //	sf::Text nazwaGracza;
+//	std::string nazwaPly;
 //	sf::RenderWindow window(sf::VideoMode(800, 600), "SFML demo");// utworz okno
 //	Menu menu(window.getSize().x, window.getSize().y);
 //	while (window.isOpen())
 //	{
+//		//std::cout << "Menu_select"<< menu_selected_flag <<"Menu_select_(1)"<< menu.getSelectedItem(1) <<"Select itheam:" << menu.getSelectedItem(2)<< std::endl;
 //		sf::Event event;
-//		while (window.pollEvent(event))
-//		{
-//			if (event.type == sf::Event::Closed)
-//				window.close();
-//			if (event.type == sf::Event::KeyPressed)
-//			{
-//				if (event.key.code == sf::Keyboard::Up && menu_selected_flag == 0)
-//				{
-//					myDelay(250);
-//					menu.przesunG();
-//				}
-//				if (event.key.code == sf::Keyboard::Down && menu_selected_flag == 0)
-//				{
-//					myDelay(250);
-//					menu.przesunD();
-//				}
-//
-//				if (menu_selected_flag == 0)
-//				{
-//					myDelay(100);
-//					if (event.key.code == sf::Keyboard::Enter && menu.getSelectedItem(0) == 0)
-//					{
-//						std::cout << "NOWA GRA..." << std::endl;
-//						menu_selected_flag = 1;
-//
-//					}
-//
-//					if (event.key.code == sf::Keyboard::Enter && menu.getSelectedItem(0) == 1)
-//					{
-//						std::cout << "kontynuuj gre..." << std::endl;
-//						menu_selected_flag = 2;
-//					}
-//					if (event.key.code == sf::Keyboard::Enter && menu.getSelectedItem(0) == 2)
-//					{
-//						std::cout << "Najlepsze wyniki..." << std::endl;
-//						menu_selected_flag = 3;
-//					}
-//
-//					if (event.key.code == sf::Keyboard::Enter && menu.getSelectedItem(0) == 3)
-//					{
-//						std::cout << "Koniec gry..." << std::endl;
-//						menu_selected_flag = 4;
-//					}
-//
-//				}
-//
-//				//NOWA GRA
-//
-//				if (event.key.code == sf::Keyboard::Up && menu_selected_flag == 1)
-//				{
-//					myDelay(250);
-//					menu.przesunGora();
-//				}
-//				if (event.key.code == sf::Keyboard::Down && menu_selected_flag == 1)
-//				{
-//					myDelay(250);
-//					menu.przesunDol();
-//				}
-//				if (event.key.code == sf::Keyboard::Left && menu_selected_flag == 1)
-//				{
-//					myDelay(250);
-//					menu.wybierzLP('L');
-//				}
-//				if (event.key.code == sf::Keyboard::Right && menu_selected_flag == 1)
-//				{
-//					myDelay(250);
-//					menu.wybierzLP('P');
-//				}
-//
-//
-//				if (menu_selected_flag == 1) {
-//					myDelay(100);
-//					//fflush(stdin);
-//					if (event.key.code == sf::Keyboard::Enter && menu.getSelectedItem(1) == 0)
-//					{
-//						std::cout << "Poziom1" << std::endl;
-//						menu.setPoziomMenu(1);
-//						//menu.przesunEnter();
-//						//menu1_select = 1;
-//						//menu.podajNazweGracza(event,window);
-//
-//					}
-//
-//
-//					if (event.key.code == sf::Keyboard::Enter && menu.getSelectedItem(1) == 3)
-//					{
-//						std::cout << "RozpoczynamyGre" << std::endl;
-//						menu.zwrotSetPly(pozimGry, wybranyCzolg, nazwaGracza);
-//						std::cout << "PozGry: " << pozimGry << " Wyb Czolg: " << wybranyCzolg << " nazwaGracza: " << std::string(nazwaGracza.getString()) << std::endl;
-//
-//					}
-//
-//				}
-//				if (event.key.code == sf::Keyboard::Escape)
-//				{
-//					window.clear();
-//					menu.setPoziomMenu(0);
-//					std::cout << "Cofnij\n";
-//					menu_selected_flag = 0;
-//				}
-//			}
-//
-//
-//		}
-//		// wyczysc obszar rysowania
-//
-//
 //		window.clear();
-//		if (menu_selected_flag == 0)
+//		if (menu_selected_flag == 0) {
+//			menu_selected_flag = menu.przesunMenu(event, window, menu.zwrocTab(1), MAX_LICZBA_POZIOMOW, 1);
 //			menu.draw(window, 0);
+//		}
 //		if (menu_selected_flag == 1) {
+//			menu1_select = menu.przesunMenu(event, window, menu.zwrocTab(2), LICZBA_WYB_ATR, 1);
 //			menu.podajNazweGracza(event, window);
 //			menu.draw(window, 1);
-//			std::cout << "nowa gre" << std::endl;
-//
+//			if (menu1_select == 4) {
+//				menu.zwrotSetPly(&poziomGry, &wybranyCzolg, &nazwaPly);
+//				std::cout << "nowa gre: Poziom:" <<poziomGry<< " Wybrany czolg: " << wybranyCzolg <<" Nazwa gracza: " << nazwaPly << std::endl;
+//				startGry = true;
+//			}
+//				
 //		}
-//		//Poziom.draw(window);
 //		if (menu_selected_flag == 2) {
 //			menu.draw(window, 2);
 //			std::cout << "kontynuj gre" << std::endl;
@@ -529,8 +404,35 @@
 //		//akcja dla tablicy wyników
 //		if (menu_selected_flag == 4)
 //			window.close();
-//		// ostatnia czynnosc - wyswietl okno wraz zawartoscia
-//		//std::cout << "selectFlaga " <<menu_selected_flag<<" NowaGra select "<<menu.getSelectedItem(1) << std::endl;
+//
+//		while (window.pollEvent(event))
+//		{
+//			if (event.type == sf::Event::Closed)
+//				window.close();
+//				
+//			
+//			if (event.type == sf::Event::KeyPressed)
+//			{
+//				
+//				if (event.key.code == sf::Keyboard::Escape)
+//				{
+//					window.clear();
+//					menu.setPoziomMenu(0);
+//					std::cout << "Cofnij\n";
+//					menu_selected_flag = 0;
+//				}
+//			}
+//
+//
+//		}
+//		//START GRY:
+//		if (startGry == true) {
+//			std::cout << "Gra dzia³aa\n";
+//
+//
+//		}
+//
+//		
 //		window.display();
 //	}
 //
